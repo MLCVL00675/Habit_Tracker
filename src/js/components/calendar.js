@@ -10,7 +10,8 @@ import {
   WEEKDAYS_FULL,
   parseDurationToMinutes,
   formatMinutesToDuration,
-  normalizeTimeString
+  normalizeTimeString,
+  normalizeCalorieString
 } from '../utils.js';
 
 export function renderCalendarView() {
@@ -125,6 +126,14 @@ export function renderCalendarView() {
             <span class="cal-metric-chip chip-wake">
               <span class="chip-ico">🌅</span> <span class="chip-val">${dayRecord.wakeTime}</span>
             </span>` : ''}
+          ${dayRecord.caloriesIn ? `
+            <span class="cal-metric-chip chip-cal-in" title="Calories In: ${dayRecord.caloriesIn}">
+              <span class="chip-ico">🍎</span> <span class="chip-val">${dayRecord.caloriesIn.replace(' kcal', '')}</span>
+            </span>` : ''}
+          ${dayRecord.caloriesBurned ? `
+            <span class="cal-metric-chip chip-cal-burn" title="Calories Burned: ${dayRecord.caloriesBurned}">
+              <span class="chip-ico">🔥</span> <span class="chip-val">${dayRecord.caloriesBurned.replace(' kcal', '')}</span>
+            </span>` : ''}
         </div>
 
         <div class="cal-day-bar-track">
@@ -214,26 +223,36 @@ export function openDayDetailModal(day) {
 
   body.innerHTML = `
     <!-- Metrics Inputs -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px;">
       <div class="form-group">
-        <label class="form-label">🌅 Wake Up (e.g. 7:05 or 705)</label>
+        <label class="form-label">🌅 Wake Up (e.g. 7:05)</label>
         <input type="text" id="modal-wake-input" class="form-textarea" style="padding:8px;" 
                placeholder="--:--" value="${escapeHtml(dayRecord.wakeTime || '')}" />
       </div>
       <div class="form-group">
-        <label class="form-label">🌙 Sleep Duration (e.g. 7:30 or 7.5)</label>
+        <label class="form-label">🌙 Sleep Duration (e.g. 7:30)</label>
         <input type="text" id="modal-sleep-input" class="form-textarea" style="padding:8px;" 
                placeholder="--:--" value="${escapeHtml(dayRecord.sleepTime || '')}" />
       </div>
       <div class="form-group">
-        <label class="form-label">📚 Study Duration (e.g. 4:00 or 4h)</label>
+        <label class="form-label">📚 Study Duration (e.g. 4h)</label>
         <input type="text" id="modal-study-input" class="form-textarea" style="padding:8px;" 
                placeholder="--:--" value="${escapeHtml(dayRecord.studyTime || '')}" />
       </div>
       <div class="form-group">
-        <label class="form-label">📱 Screen Duration (e.g. 1:30 or 1.5)</label>
+        <label class="form-label">📱 Screen Duration (e.g. 1.5h)</label>
         <input type="text" id="modal-screen-input" class="form-textarea" style="padding:8px;" 
                placeholder="--:--" value="${escapeHtml(dayRecord.screenTime || '')}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">🍎 Cal Ingested (e.g. 2100 or 2.1k)</label>
+        <input type="text" id="modal-cal-in-input" class="form-textarea" style="padding:8px;" 
+               placeholder="-- kcal" value="${escapeHtml(dayRecord.caloriesIn || '')}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">🔥 Cal Burned (e.g. 550 or 600)</label>
+        <input type="text" id="modal-cal-burn-input" class="form-textarea" style="padding:8px;" 
+               placeholder="-- kcal" value="${escapeHtml(dayRecord.caloriesBurned || '')}" />
       </div>
     </div>
 
@@ -290,6 +309,8 @@ export function openDayDetailModal(day) {
     const sleepInput = document.getElementById('modal-sleep-input');
     const studyInput = document.getElementById('modal-study-input');
     const screenInput = document.getElementById('modal-screen-input');
+    const calInInput = document.getElementById('modal-cal-in-input');
+    const calBurnInput = document.getElementById('modal-cal-burn-input');
 
     const dayObj = monthData.days[day];
     if (wakeInput) {
@@ -306,6 +327,12 @@ export function openDayDetailModal(day) {
     if (screenInput) {
       const mins = parseDurationToMinutes(screenInput.value);
       dayObj.screenTime = mins > 0 ? formatMinutesToDuration(mins) : '';
+    }
+    if (calInInput) {
+      dayObj.caloriesIn = normalizeCalorieString(calInInput.value);
+    }
+    if (calBurnInput) {
+      dayObj.caloriesBurned = normalizeCalorieString(calBurnInput.value);
     }
 
     dayObj.habits = localHabits;

@@ -127,6 +127,8 @@ export function createDefaultMonthData(year, month, habitsList = DEFAULT_HABITS)
       sleepTime: '',
       studyTime: '',
       screenTime: '',
+      caloriesIn: '',
+      caloriesBurned: '',
       habits: habits
     };
   }
@@ -155,6 +157,8 @@ export function createSampleAugust2026Data(habitsList = DEFAULT_HABITS) {
   const sampleSleep = ['7h 30m', '8h 00m', '7h 15m', '6h 45m', '7h 45m', '8h 15m'];
   const sampleStudy = ['4h 30m', '5h 00m', '3h 45m', '6h 15m', '4h 00m', '5h 30m', '2h 30m'];
   const sampleScreen = ['1h 45m', '1h 15m', '2h 10m', '1h 30m', '0h 55m', '2h 30m', '1h 20m'];
+  const sampleCaloriesIn = ['2,100 kcal', '2,250 kcal', '1,950 kcal', '2,300 kcal', '2,050 kcal', '2,150 kcal'];
+  const sampleCaloriesBurned = ['550 kcal', '620 kcal', '480 kcal', '700 kcal', '500 kcal', '580 kcal'];
 
   // Distribution across 6 gradient levels:
   // 100% (12/12): Days 10, 16, 20 (Celestial Holographic)
@@ -175,6 +179,8 @@ export function createSampleAugust2026Data(habitsList = DEFAULT_HABITS) {
     dayObj.sleepTime = sampleSleep[d % sampleSleep.length];
     dayObj.studyTime = sampleStudy[d % sampleStudy.length];
     dayObj.screenTime = sampleScreen[d % sampleScreen.length];
+    dayObj.caloriesIn = sampleCaloriesIn[d % sampleCaloriesIn.length];
+    dayObj.caloriesBurned = sampleCaloriesBurned[d % sampleCaloriesBurned.length];
 
     const dow = getDayOfWeek(2026, 8, d);
     const targetDone = targetDoneCounts[d] || 0;

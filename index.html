@@ -189,7 +189,7 @@
                   <!-- Group Headers Row -->
                   <tr class="header-group-row">
                     <th colspan="2" class="th-group-date">DATE & DAY</th>
-                    <th colspan="4" class="th-group-metrics">DAILY METRICS (TIME / DURATION)</th>
+                    <th colspan="6" class="th-group-metrics">DAILY METRICS & CALORIES (TIME / DURATION / KCAL)</th>
                     <th colspan="12" class="th-group-habits">HABITS & TASKS ROUTINE (12 CHECKBOXES)</th>
                     <th class="th-group-progress">PROGRESS</th>
                   </tr>
@@ -211,6 +211,12 @@
                     </th>
                     <th class="col-metric" title="Phone Screen Time (X hr Y m)">
                       <div class="th-content"><span class="th-icon">📱</span> Screen Time</div>
+                    </th>
+                    <th class="col-metric" title="Calories Consumed (e.g. 2100 or 2.1k)">
+                      <div class="th-content"><span class="th-icon">🍎</span> Cal In</div>
+                    </th>
+                    <th class="col-metric" title="Calories Burned (e.g. 550 or 550 kcal)">
+                      <div class="th-content"><span class="th-icon">🔥</span> Cal Burn</div>
                     </th>
 
                     <!-- Habits Group -->
@@ -478,6 +484,16 @@
                 <span class="kpi-subtext" id="kpi-top-habit-pct">0% success rate</span>
               </div>
             </div>
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Daily Calorie Balance</span>
+                <span class="kpi-icon">🍎</span>
+              </div>
+              <div class="kpi-body">
+                <span class="kpi-value" id="kpi-avg-calories">-- / --</span>
+                <span class="kpi-subtext" id="kpi-calorie-balance-status">Avg Ingested vs Burned</span>
+              </div>
+            </div>
           </div>
 
           <!-- Analytics Charts Grid -->
@@ -518,6 +534,19 @@
               </div>
               <div class="chart-canvas-wrapper">
                 <canvas id="weekly-trends-chart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 4: Daily Calorie Intake & Burn Balance -->
+            <div class="chart-card wide-card">
+              <div class="chart-card-header">
+                <div class="chart-title-group">
+                  <h3 class="chart-title">Daily Energy Balance: Calorie Intake vs Burn</h3>
+                  <span class="chart-subtitle">Day-by-day caloric intake (🍎 In) vs calories burned (🔥 Out) and net deficit/surplus</span>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="calories-energy-chart"></canvas>
               </div>
             </div>
           </div>

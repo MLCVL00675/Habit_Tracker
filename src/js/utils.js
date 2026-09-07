@@ -152,6 +152,32 @@ export function normalizeTimeString(val) {
   return trimmed;
 }
 
+// Parse calorie strings (e.g. "2100", "2,100", "2.1k", "2100 kcal", "550 cal", "550") -> integer number
+export function parseCalorieToNumber(val) {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === 'number') return Math.max(0, Math.round(val));
+  let str = String(val).trim().toLowerCase();
+  if (!str) return 0;
+
+  // 1. Check for "k" notation: e.g. "2.1k" -> 2100, "2k" -> 2000
+  const kMatch = str.match(/^(\d+(?:\.\d+)?)\s*k$/i);
+  if (kMatch) {
+    return Math.round(parseFloat(kMatch[1]) * 1000);
+  }
+
+  // 2. Remove commas, spaces, and "kcal"/"cal"
+  str = str.replace(/,/g, '').replace(/\s*(?:kcal|calories|calorie|cals|cal)/g, '').trim();
+  const num = parseInt(str, 10);
+  return (!isNaN(num) && num > 0) ? num : 0;
+}
+
+// Format calorie count string cleanly (e.g. "2100" -> "2,100 kcal", "550" -> "550 kcal")
+export function normalizeCalorieString(val) {
+  const num = parseCalorieToNumber(val);
+  if (num <= 0) return '';
+  return `${num.toLocaleString()} kcal`;
+}
+
 // Days of week short names
 export const WEEKDAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const WEEKDAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

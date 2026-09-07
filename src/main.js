@@ -388,7 +388,7 @@ function exportCurrentMonthToCsv() {
   const monthName = MONTH_NAMES[state.currentMonth - 1];
 
   const habitHeaders = habits.map(h => `"${h.name}"`).join(',');
-  let csv = `Date,Day,Wake Up,Sleep Time,Study Time,Screen Time,${habitHeaders},Progress %\n`;
+  let csv = `Date,Day,Wake Up,Sleep Time,Study Time,Screen Time,Calories In,Calories Burned,${habitHeaders},Progress %\n`;
 
   for (let d = 1; d <= totalDays; d++) {
     const dayOfWeekIdx = getDayOfWeek(state.currentYear, state.currentMonth, d);
@@ -405,7 +405,7 @@ function exportCurrentMonthToCsv() {
     const divisor = habits.length || 1;
     const pct = Math.round((done / divisor) * 100);
 
-    csv += `${d},${WEEKDAYS_SHORT[dayOfWeekIdx]},"${dayRecord.wakeTime || ''}","${dayRecord.sleepTime || ''}","${dayRecord.studyTime || ''}","${dayRecord.screenTime || ''}",${habitCols},${pct}%\n`;
+    csv += `${d},${WEEKDAYS_SHORT[dayOfWeekIdx]},"${dayRecord.wakeTime || ''}","${dayRecord.sleepTime || ''}","${dayRecord.studyTime || ''}","${dayRecord.screenTime || ''}","${dayRecord.caloriesIn || ''}","${dayRecord.caloriesBurned || ''}",${habitCols},${pct}%\n`;
   }
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

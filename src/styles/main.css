@@ -1877,6 +1877,18 @@ tbody tr:hover .sticky-col-2 {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
+.cal-metric-chip.chip-cal-in {
+  color: #fbbf24;
+  font-size: 0.66rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.cal-metric-chip.chip-cal-burn {
+  color: #fb7185;
+  font-size: 0.66rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
 .cal-day-cell.heat-level-0 .cal-metric-chip.chip-habits {
   color: #94a3b8;
 }
@@ -1885,6 +1897,12 @@ tbody tr:hover .sticky-col-2 {
 }
 .cal-day-cell.heat-level-0 .cal-metric-chip.chip-wake {
   color: #fde68a;
+}
+.cal-day-cell.heat-level-0 .cal-metric-chip.chip-cal-in {
+  color: #fbbf24;
+}
+.cal-day-cell.heat-level-0 .cal-metric-chip.chip-cal-burn {
+  color: #fb7185;
 }
 
 .cal-day-bar-track {

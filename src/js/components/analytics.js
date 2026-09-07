@@ -8,7 +8,8 @@ import {
   getDaysInMonth,
   parseDurationToMinutes,
   minutesToDecimalHours,
-  formatMinutesToDuration
+  formatMinutesToDuration,
+  parseCalorieToNumber
 } from '../utils.js';
 
 // Register Chart.js components
@@ -17,6 +18,7 @@ Chart.register(...registerables);
 let timeMetricsChartInstance = null;
 let habitConsistencyChartInstance = null;
 let weeklyTrendsChartInstance = null;
+let caloriesEnergyChartInstance = null;
 
 export function renderAnalyticsView() {
   const monthData = state.getCurrentMonthData();
@@ -29,6 +31,7 @@ export function renderAnalyticsView() {
   renderTimeMetricsChart(monthData, totalDays);
   renderHabitConsistencyChart(monthData, totalDays);
   renderWeeklyTrendsChart(monthData, totalDays);
+  renderCaloriesEnergyChart(monthData, totalDays);
 }
 
 function calculateAndRenderKPIs(monthData, totalDays) {
@@ -39,6 +42,10 @@ function calculateAndRenderKPIs(monthData, totalDays) {
   let validSleepDays = 0;
   let totalHabitsDone = 0;
   let totalHabitTarget = 0;
+  let totalCalIn = 0;
+  let validCalInDays = 0;
+  let totalCalBurn = 0;
+  let validCalBurnDays = 0;
 
   const habitCounts = {};
   habits.forEach(h => { habitCounts[h.id] = 0; });
@@ -48,12 +55,22 @@ function calculateAndRenderKPIs(monthData, totalDays) {
     const studyM = parseDurationToMinutes(dayRecord.studyTime);
     const screenM = parseDurationToMinutes(dayRecord.screenTime);
     const sleepM = parseDurationToMinutes(dayRecord.sleepTime);
+    const calIn = parseCalorieToNumber(dayRecord.caloriesIn);
+    const calBurn = parseCalorieToNumber(dayRecord.caloriesBurned);
 
     if (studyM > 0) totalStudyMins += studyM;
     if (screenM > 0) totalScreenMins += screenM;
     if (sleepM > 0) {
       totalSleepMins += sleepM;
       validSleepDays++;
+    }
+    if (calIn > 0) {
+      totalCalIn += calIn;
+      validCalInDays++;
+    }
+    if (calBurn > 0) {
+      totalCalBurn += calBurn;
+      validCalBurnDays++;
     }
 
     if (dayRecord.habits) {
@@ -86,6 +103,8 @@ function calculateAndRenderKPIs(monthData, totalDays) {
   const ratioSubEl = document.getElementById('kpi-ratio-subtext');
   const topHabitEl = document.getElementById('kpi-top-habit');
   const topHabitPctEl = document.getElementById('kpi-top-habit-pct');
+  const avgCaloriesEl = document.getElementById('kpi-avg-calories');
+  const calorieBalanceStatusEl = document.getElementById('kpi-calorie-balance-status');
 
   if (scoreEl) scoreEl.textContent = `${score}/100`;
 
@@ -145,6 +164,33 @@ function calculateAndRenderKPIs(monthData, totalDays) {
   if (topHabitPctEl && bestHabitTarget > 0) {
     const pct = Math.round((bestHabitDone / bestHabitTarget) * 100);
     topHabitPctEl.textContent = `${bestHabitDone}/${bestHabitTarget} target days (${pct}% adherence)`;
+  }
+
+  // Calorie KPIs
+  const avgCalIn = validCalInDays > 0 ? Math.round(totalCalIn / validCalInDays) : 0;
+  const avgCalBurn = validCalBurnDays > 0 ? Math.round(totalCalBurn / validCalBurnDays) : 0;
+  if (avgCaloriesEl) {
+    const inStr = avgCalIn > 0 ? `${avgCalIn.toLocaleString()} in` : '--';
+    const burnStr = avgCalBurn > 0 ? `${avgCalBurn.toLocaleString()} out` : '--';
+    avgCaloriesEl.textContent = `${inStr} / ${burnStr}`;
+  }
+  if (calorieBalanceStatusEl) {
+    if (avgCalIn > 0 || avgCalBurn > 0) {
+      const net = avgCalIn - avgCalBurn;
+      if (net > 0) {
+        calorieBalanceStatusEl.textContent = `+${net.toLocaleString()} kcal net intake`;
+        calorieBalanceStatusEl.style.color = '#f59e0b';
+      } else if (net < 0) {
+        calorieBalanceStatusEl.textContent = `${net.toLocaleString()} kcal net deficit`;
+        calorieBalanceStatusEl.style.color = 'var(--accent-emerald)';
+      } else {
+        calorieBalanceStatusEl.textContent = 'Balanced daily energy';
+        calorieBalanceStatusEl.style.color = 'var(--accent-cyan)';
+      }
+    } else {
+      calorieBalanceStatusEl.textContent = 'Log calories in matrix to track';
+      calorieBalanceStatusEl.style.color = 'var(--text-secondary)';
+    }
   }
 }
 
@@ -427,3 +473,124 @@ function renderWeeklyTrendsChart(monthData, totalDays) {
     }
   });
 }
+
+// --------------------------------------------------------------------------
+// CHART 4: Daily Calorie Intake vs Burn Energy Balance
+// --------------------------------------------------------------------------
+function renderCaloriesEnergyChart(monthData, totalDays) {
+  const canvas = document.getElementById('calories-energy-chart');
+  if (!canvas) return;
+
+  const labels = [];
+  const calInData = [];
+  const calBurnData = [];
+  const netBalanceData = [];
+
+  for (let d = 1; d <= totalDays; d++) {
+    labels.push(`Day ${d}`);
+    const dayRecord = monthData.days[d] || {};
+    const cIn = parseCalorieToNumber(dayRecord.caloriesIn);
+    const cBurn = parseCalorieToNumber(dayRecord.caloriesBurned);
+
+    calInData.push(cIn > 0 ? cIn : null);
+    calBurnData.push(cBurn > 0 ? cBurn : null);
+    netBalanceData.push((cIn > 0 || cBurn > 0) ? (cIn - cBurn) : null);
+  }
+
+  if (caloriesEnergyChartInstance) {
+    caloriesEnergyChartInstance.destroy();
+  }
+
+  caloriesEnergyChartInstance = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Calories Ingested (🍎 kcal)',
+          data: calInData,
+          backgroundColor: 'rgba(245, 158, 11, 0.75)',
+          borderColor: '#f59e0b',
+          borderWidth: 1.5,
+          borderRadius: 4,
+          order: 2
+        },
+        {
+          label: 'Calories Burned (🔥 kcal)',
+          data: calBurnData,
+          backgroundColor: 'rgba(239, 68, 68, 0.75)',
+          borderColor: '#ef4444',
+          borderWidth: 1.5,
+          borderRadius: 4,
+          order: 2
+        },
+        {
+          type: 'line',
+          label: 'Net Balance (kcal)',
+          data: netBalanceData,
+          borderColor: '#38bdf8',
+          backgroundColor: 'rgba(56, 189, 248, 0.12)',
+          fill: false,
+          borderWidth: 2.5,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          tension: 0.3,
+          spanGaps: true,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            color: '#94a3b8',
+            font: { family: 'Outfit', size: 12, weight: '600' },
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          titleFont: { family: 'Outfit', weight: 'bold' },
+          bodyFont: { family: 'JetBrains Mono' },
+          borderColor: 'rgba(255, 255, 255, 0.1)',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            label: (ctx) => {
+              const val = ctx.raw;
+              if (val === null || val === undefined) return ` ${ctx.dataset.label}: --`;
+              if (ctx.dataset.label.includes('Net')) {
+                const sign = val > 0 ? '+' : '';
+                return ` ${ctx.dataset.label}: ${sign}${val.toLocaleString()} kcal (${val > 0 ? 'Surplus' : (val < 0 ? 'Deficit' : 'Zero')})`;
+              }
+              return ` ${ctx.dataset.label}: ${val.toLocaleString()} kcal`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255, 255, 255, 0.04)' },
+          ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } }
+        },
+        y: {
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          ticks: {
+            color: '#64748b',
+            font: { family: 'JetBrains Mono', size: 11 },
+            callback: val => `${val} kcal`
+          }
+        }
+      }
+    }
+  });
+}
+

@@ -7,6 +7,8 @@ import {
   parseDurationToMinutes,
   formatMinutesToDuration,
   normalizeTimeString,
+  parseCalorieToNumber,
+  normalizeCalorieString,
   calculateHabitStreaks
 } from '../utils.js';
 
@@ -59,7 +61,7 @@ export function renderMatrixTable() {
       <!-- Group Headers Row -->
       <tr class="header-group-row">
         <th colspan="2" class="th-group-date">DATE & DAY</th>
-        <th colspan="4" class="th-group-metrics">DAILY METRICS (TIME / DURATION)</th>
+        <th colspan="6" class="th-group-metrics">DAILY METRICS & CALORIES (TIME / DURATION / KCAL)</th>
         <th colspan="${habits.length || 1}" class="th-group-habits">HABITS & TASKS ROUTINE (${habits.length} CHECKBOXES)</th>
         <th class="th-group-progress">PROGRESS</th>
       </tr>
@@ -71,13 +73,19 @@ export function renderMatrixTable() {
           <div class="th-content"><span class="th-icon">🌅</span> Wake Up</div>
         </th>
         <th class="col-metric" title="Sleep Duration (X hr Y m)">
-          <div class="th-content"><span class="th-icon">🌙</span> Sleep Time</div>
+          <div class="th-content"><span class="th-icon">🌙</span> Sleep</div>
         </th>
         <th class="col-metric" title="Study Duration (X hr Y m)">
-          <div class="th-content"><span class="th-icon">📚</span> Study Time</div>
+          <div class="th-content"><span class="th-icon">📚</span> Study</div>
         </th>
         <th class="col-metric" title="Phone Screen Time (X hr Y m)">
-          <div class="th-content"><span class="th-icon">📱</span> Screen Time</div>
+          <div class="th-content"><span class="th-icon">📱</span> Screen</div>
+        </th>
+        <th class="col-metric" title="Calories Consumed (e.g. 2100 or 2.1k)">
+          <div class="th-content"><span class="th-icon">🍎</span> Cal In</div>
+        </th>
+        <th class="col-metric" title="Calories Burned (e.g. 550 or 550 kcal)">
+          <div class="th-content"><span class="th-icon">🔥</span> Cal Burn</div>
         </th>
         ${habitHeaderColumns}
         <th class="col-progress" title="Daily Completion Percentage">Daily %</th>
@@ -94,6 +102,8 @@ export function renderMatrixTable() {
   let validStudyDays = 0, totalStudyMins = 0;
   let validScreenDays = 0, totalScreenMins = 0;
   let wakeTimeMinsTotal = 0, validWakeDays = 0;
+  let validCalInDays = 0, totalCalIn = 0;
+  let validCalBurnDays = 0, totalCalBurn = 0;
 
   const habitDoneCounts = {};
   habits.forEach(h => { habitDoneCounts[h.id] = 0; });
@@ -112,7 +122,7 @@ export function renderMatrixTable() {
     if (state.filterMode === 'weekdays' && isWeekend) continue;
 
     const dayRecord = monthData.days[day] || {
-      wakeTime: '', sleepTime: '', studyTime: '', screenTime: '', habits: {}
+      wakeTime: '', sleepTime: '', studyTime: '', screenTime: '', caloriesIn: '', caloriesBurned: '', habits: {}
     };
 
     // Count scheduled habits & completed habits for today
@@ -137,7 +147,7 @@ export function renderMatrixTable() {
 
     grandTotalHabitsDone += habitsDoneCount;
 
-    // Accumulate durations
+    // Accumulate durations & metrics
     const sleepM = parseDurationToMinutes(dayRecord.sleepTime);
     if (sleepM > 0) { totalSleepMins += sleepM; validSleepDays++; }
 
@@ -146,6 +156,12 @@ export function renderMatrixTable() {
 
     const screenM = parseDurationToMinutes(dayRecord.screenTime);
     if (screenM > 0) { totalScreenMins += screenM; validScreenDays++; }
+
+    const cIn = parseCalorieToNumber(dayRecord.caloriesIn);
+    if (cIn > 0) { totalCalIn += cIn; validCalInDays++; }
+
+    const cBurn = parseCalorieToNumber(dayRecord.caloriesBurned);
+    if (cBurn > 0) { totalCalBurn += cBurn; validCalBurnDays++; }
 
     if (dayRecord.wakeTime) {
       const wakeMins = parseWakeTimeToMins(dayRecord.wakeTime);
@@ -218,7 +234,7 @@ export function renderMatrixTable() {
           ${isToday ? '<span class="today-tag-pill">TODAY</span>' : ''}${dayOfWeekStr}
         </td>
         
-        <!-- Daily Metrics -->
+        <!-- Daily Metrics & Calories -->
         <td class="col-metric-cell">
           <input type="text" class="metric-input" data-day="${day}" data-metric="wakeTime" 
                  placeholder="--:--" title="Wake Up Time: e.g. 7:05, 0705, 6:30 am" value="${escapeHtml(dayRecord.wakeTime || '')}" />
@@ -234,6 +250,14 @@ export function renderMatrixTable() {
         <td class="col-metric-cell">
           <input type="text" class="metric-input" data-day="${day}" data-metric="screenTime" 
                  placeholder="--:--" title="Screen Duration: e.g. 1:30, 1.5, 1h 30m" value="${escapeHtml(dayRecord.screenTime || '')}" />
+        </td>
+        <td class="col-metric-cell">
+          <input type="text" class="metric-input" data-day="${day}" data-metric="caloriesIn" 
+                 placeholder="-- kcal" title="Calories Ingested: e.g. 2100 or 2.1k" value="${escapeHtml(dayRecord.caloriesIn || '')}" />
+        </td>
+        <td class="col-metric-cell">
+          <input type="text" class="metric-input" data-day="${day}" data-metric="caloriesBurned" 
+                 placeholder="-- kcal" title="Calories Burned: e.g. 550 or 550 kcal" value="${escapeHtml(dayRecord.caloriesBurned || '')}" />
         </td>
 
         <!-- Habits -->
@@ -264,6 +288,8 @@ export function renderMatrixTable() {
   const avgStudyMins = validStudyDays > 0 ? Math.round(totalStudyMins / validStudyDays) : 0;
   const avgScreenMins = validScreenDays > 0 ? Math.round(totalScreenMins / validScreenDays) : 0;
   const avgWakeStr = validWakeDays > 0 ? minsToWakeTimeStr(Math.round(wakeTimeMinsTotal / validWakeDays)) : '--:--';
+  const avgCalIn = validCalInDays > 0 ? Math.round(totalCalIn / validCalInDays) : 0;
+  const avgCalBurn = validCalBurnDays > 0 ? Math.round(totalCalBurn / validCalBurnDays) : 0;
 
   let totalTargetQuota = 0;
 
@@ -299,6 +325,12 @@ export function renderMatrixTable() {
       </td>
       <td class="metric-summary-val" title="Average Screen Time (Total: ${formatMinutesToDuration(totalScreenMins)})">
         ${formatMinutesToDuration(avgScreenMins) || '--'}
+      </td>
+      <td class="metric-summary-val" title="Average Daily Calories Consumed (Total: ${totalCalIn.toLocaleString()} kcal)">
+        ${avgCalIn > 0 ? `${avgCalIn.toLocaleString()} kcal` : '--'}
+      </td>
+      <td class="metric-summary-val" title="Average Daily Calories Burned (Total: ${totalCalBurn.toLocaleString()} kcal)">
+        ${avgCalBurn > 0 ? `${avgCalBurn.toLocaleString()} kcal` : '--'}
       </td>
       ${habitFooterCells}
       <td class="metric-summary-val" style="color:var(--accent-gold); font-size:0.85rem;" title="Overall Month Habit Target Adherence">
@@ -377,6 +409,9 @@ function attachGridListeners(tbody) {
       if (rawVal) {
         if (metric === 'wakeTime') {
           val = normalizeTimeString(rawVal);
+          input.value = val;
+        } else if (metric === 'caloriesIn' || metric === 'caloriesBurned') {
+          val = normalizeCalorieString(rawVal);
           input.value = val;
         } else {
           const mins = parseDurationToMinutes(rawVal);
