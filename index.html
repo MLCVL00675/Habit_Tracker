@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/src/styles/main.css" />
 </head>
 <body>
@@ -18,15 +19,44 @@
     <!-- Top Global Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand-logo">
-          <div class="logo-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
+        <div class="brand-logo" title="ChronoLog OS // Bullet Journal Habit & Productivity OS">
+          <div class="logo-icon-wrapper">
+            <div class="logo-ambient-pulse"></div>
+            <div class="logo-icon">
+              <svg width="26" height="26" viewBox="0 0 48 48" fill="none" class="brand-svg">
+                <defs>
+                  <linearGradient id="logoRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#06b6d4" />
+                    <stop offset="50%" stop-color="#8b5cf6" />
+                    <stop offset="100%" stop-color="#ec4899" />
+                  </linearGradient>
+                  <linearGradient id="logoGemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#38bdf8" />
+                    <stop offset="100%" stop-color="#10b981" />
+                  </linearGradient>
+                </defs>
+                <!-- Orbiting Habit Ring -->
+                <circle cx="24" cy="24" r="19" stroke="url(#logoRingGrad)" stroke-width="2.5" stroke-dasharray="4 3" opacity="0.6" class="logo-orbit-ring" />
+                <!-- Continuous Core Arc -->
+                <path d="M12 24 A 12 12 0 1 1 36 24" stroke="url(#logoRingGrad)" stroke-width="3" stroke-linecap="round" />
+                <path d="M36 24 A 12 12 0 0 1 18 34" stroke="url(#logoGemGrad)" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+                <!-- Cardinal Milestone Gems -->
+                <circle cx="24" cy="5" r="2.2" fill="#38bdf8" />
+                <circle cx="43" cy="24" r="2.2" fill="#ec4899" />
+                <circle cx="24" cy="43" r="2.2" fill="#10b981" />
+                <circle cx="5" cy="24" r="2.2" fill="#8b5cf6" />
+                <!-- Central Prism Spark / Check -->
+                <polygon points="24,15 30,19 30,28 24,32 18,28 18,19" fill="url(#logoGemGrad)" opacity="0.9" />
+                <path d="M20.5 24 L23.5 26.5 L28 21" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
           </div>
           <div class="brand-text">
-            <div class="brand-title">CHRONOLOG <span class="badge-tag">OS v2.6</span></div>
-            <div class="brand-subtitle">Bullet Journal Productivity & Habit Matrix</div>
+            <div class="brand-title">
+              <span class="brand-title-gradient">CHRONOLOG</span>
+              <span class="badge-tag">OS v2.6</span>
+            </div>
+            <div class="brand-subtitle">Bullet Journal Productivity Matrix</div>
           </div>
         </div>
 

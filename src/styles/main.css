@@ -266,44 +266,108 @@ button {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  cursor: pointer;
+  user-select: none;
 }
 
-.logo-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-  color: #fff;
+.logo-icon-wrapper {
+  position: relative;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 15px var(--accent-cyan-glow);
+  flex-shrink: 0;
+}
+
+.logo-ambient-pulse {
+  position: absolute;
+  inset: -3px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.45), rgba(139, 92, 246, 0.45), rgba(236, 72, 153, 0.35));
+  filter: blur(8px);
+  opacity: 0.6;
+  animation: logoPulse 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes logoPulse {
+  0% { transform: scale(0.94); opacity: 0.45; }
+  100% { transform: scale(1.08); opacity: 0.8; }
+}
+
+.logo-icon {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.brand-logo:hover .logo-icon {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border-color: rgba(6, 182, 212, 0.6);
+}
+
+.brand-svg {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+
+.logo-orbit-ring {
+  animation: orbitRotate 22s linear infinite;
+  transform-origin: 24px 24px;
+}
+
+@keyframes orbitRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .brand-title {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   display: flex;
   align-items: center;
   gap: 8px;
+  line-height: 1.2;
+}
+
+.brand-title-gradient {
+  background: linear-gradient(135deg, #ffffff 30%, #38bdf8 75%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  filter: drop-shadow(0 0 16px rgba(6, 182, 212, 0.25));
 }
 
 .badge-tag {
   font-size: 0.65rem;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
   background: rgba(6, 182, 212, 0.15);
   color: var(--accent-cyan);
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  font-weight: 600;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .brand-subtitle {
   font-size: 0.75rem;
   color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 /* Month Navigator */
