@@ -37,6 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial Full Render
   updateHeaderMonthInfo();
   renderAllViews();
+
+  // Lifecycle Auto-Save Hooks (ensures data is flushed to localStorage on tab close, reload, or backgrounding)
+  window.addEventListener('beforeunload', () => state.saveToStorage());
+  window.addEventListener('pagehide', () => state.saveToStorage());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') state.saveToStorage();
+  });
 });
 
 // Update Top Month Header Display

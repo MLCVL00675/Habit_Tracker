@@ -203,9 +203,8 @@ export function createSampleAugust2026Data(habitsList = DEFAULT_HABITS) {
 // Global App State Class
 class AppState {
   constructor() {
-    const now = new Date();
-    this.currentYear = now.getFullYear() || 2026;
-    this.currentMonth = (now.getMonth() + 1) || 9; // Auto-detects September (9)
+    this.currentYear = 2026;
+    this.currentMonth = 9; // Default to September 2026
     this.habits = DEFAULT_HABITS.map(h => ({ ...h }));
     this.allMonthsData = {}; // key: "YYYY-MM"
     this.theme = 'dark';
@@ -218,29 +217,16 @@ class AppState {
 
   init() {
     this.loadFromStorage();
-    const now = new Date();
-    const realYear = now.getFullYear();
-    const realMonth = now.getMonth() + 1;
 
-    // If user's stored month was August or not initialized, synchronize to current real month (September)
-    if (this.currentMonth === 8 || !this.allMonthsData[`${this.currentYear}-${String(this.currentMonth).padStart(2, '0')}`]) {
-      this.currentYear = realYear;
-      this.currentMonth = realMonth;
-    }
-
+    // Ensure the current active month has data initialized
     const currentKey = this.getMonthKey();
     if (!this.allMonthsData[currentKey]) {
       this.allMonthsData[currentKey] = createDefaultMonthData(this.currentYear, this.currentMonth, this.habits);
     }
 
-    // Clean up August 2026 mock data if user is starting fresh from September
-    if (this.allMonthsData['2026-08'] && this.currentMonth === 9) {
-      delete this.allMonthsData['2026-08'];
-    }
-
-    this.saveToStorage();
     this.sanitizeUnscheduledDays();
     this.autoMarkPastUnloggedHabits();
+    this.saveToStorage();
   }
 
   getTodayDate() {

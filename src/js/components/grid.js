@@ -431,6 +431,17 @@ function attachGridListeners(tbody) {
       state.setMetric(day, metric, val);
     };
 
+    // Instant auto-save while typing
+    input.addEventListener('input', () => {
+      const day = parseInt(input.getAttribute('data-day'), 10);
+      const metric = input.getAttribute('data-metric');
+      const monthData = state.getCurrentMonthData();
+      if (monthData.days && monthData.days[day]) {
+        monthData.days[day][metric] = input.value;
+        state.saveToStorage();
+      }
+    });
+
     input.addEventListener('change', commitMetric);
     input.addEventListener('blur', commitMetric);
     input.addEventListener('keydown', (e) => {
