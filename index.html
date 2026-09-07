@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChronoLog // September 2026 Bullet Journal Habit & Productivity OS</title>
+  <meta name="description" content="Personal monthly habit, metric, and routine tracker modeled after physical bullet journal setup with streak tracking, color-coded heatmaps, analytics, and gamification." />
+  
+  <!-- Google Fonts: Outfit (Display & Headings), Inter (UI), JetBrains Mono (Metrics & Durations) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body>
+  <div id="app" class="app-root">
+    <!-- Top Global Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-logo">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title">CHRONOLOG <span class="badge-tag">OS v2.6</span></div>
+            <div class="brand-subtitle">Bullet Journal Productivity & Habit Matrix</div>
+          </div>
+        </div>
+
+        <!-- Month Navigation Controls -->
+        <div class="month-navigator">
+          <button id="prev-month-btn" class="nav-btn" title="Previous Month" aria-label="Previous Month">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="current-month-display">
+            <span id="current-month-label">September 2026</span>
+            <span id="month-days-count" class="month-days-badge">30 Days</span>
+          </div>
+          <button id="next-month-btn" class="nav-btn" title="Next Month" aria-label="Next Month">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button id="reset-month-btn" class="btn-ghost-sm" title="Jump to September 2026">Sep '26</button>
+        </div>
+      </div>
+
+      <!-- Gamification & Quick Stats Header Bar -->
+      <div class="header-center">
+        <div class="gamification-header-pill" id="gamification-summary-pill" title="Click to view Quests & Badges">
+          <div class="level-badge" id="header-level-badge">Lv. 1</div>
+          <div class="xp-info">
+            <div class="xp-labels">
+              <span id="header-rank-title" class="rank-title">Novice Aspirant</span>
+              <span id="header-xp-text" class="xp-text">0 / 500 XP</span>
+            </div>
+            <div class="xp-bar-track">
+              <div id="header-xp-fill" class="xp-bar-fill" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Header Controls -->
+      <div class="header-right">
+        <div class="global-streak-badge" id="global-streak-badge" title="Daily Discipline Streak: Counts consecutive days with >90% of scheduled habits completed">
+          <span class="streak-icon">🔥</span>
+          <span id="header-streak-count" class="streak-count">0</span>
+          <span class="streak-label">DAY STREAK</span>
+        </div>
+
+        <div class="header-actions">
+          <button id="sound-toggle-btn" class="icon-btn" title="Toggle Sound Effects" aria-label="Toggle Sound Effects">
+            <span id="sound-icon">🔊</span>
+          </button>
+          <button id="theme-toggle-btn" class="icon-btn" title="Toggle Theme (Dark Obsidian / Warm Paper)" aria-label="Toggle Theme">
+            <span id="theme-icon">🌙</span>
+          </button>
+          <button id="export-import-btn" class="icon-btn" title="Data Backup & Export" aria-label="Data Backup & Export">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-tabs-nav" aria-label="Main Navigation">
+      <button class="tab-btn active" data-tab="grid-tab">
+        <span class="tab-icon">📓</span>
+        <span class="tab-label">Monthly Grid</span>
+        <span class="tab-indicator"></span>
+      </button>
+      <button class="tab-btn" data-tab="streaks-tab">
+        <span class="tab-icon">🔥</span>
+        <span class="tab-label">Streaks & Chains</span>
+        <span class="tab-indicator"></span>
+      </button>
+      <button class="tab-btn" data-tab="goals-tab">
+        <span class="tab-icon">🎯</span>
+        <span class="tab-label">Monthly Goals</span>
+        <span class="badge-counter" id="goals-tab-badge">0/5</span>
+        <span class="tab-indicator"></span>
+      </button>
+      <button class="tab-btn" data-tab="calendar-tab">
+        <span class="tab-icon">📅</span>
+        <span class="tab-label">Calendar & Heatmap</span>
+        <span class="tab-indicator"></span>
+      </button>
+      <button class="tab-btn" data-tab="analytics-tab">
+        <span class="tab-icon">📊</span>
+        <span class="tab-label">Analytics & Insights</span>
+        <span class="tab-indicator"></span>
+      </button>
+      <button class="tab-btn" data-tab="gamification-tab">
+        <span class="tab-icon">🏆</span>
+        <span class="tab-label">Gamification & Badges</span>
+        <span class="badge-counter" id="unlocked-badge-count">0</span>
+        <span class="tab-indicator"></span>
+      </button>
+      <button class="tab-btn" data-tab="habits-tab">
+        <span class="tab-icon">⚙️</span>
+        <span class="tab-label">Manage Habits</span>
+        <span class="tab-indicator"></span>
+      </button>
+    </nav>
+
+    <!-- View Containers -->
+    <main class="main-content-area">
+      <!-- ============================================== -->
+      <!-- TAB 1: MONTHLY BULLET JOURNAL MATRIX           -->
+      <!-- ============================================== -->
+      <section id="grid-tab" class="tab-pane active">
+        <div class="grid-workspace-layout">
+          <!-- Full Width Main Table Section -->
+          <div class="grid-table-container">
+            <div class="table-top-bar">
+              <div class="table-title-group">
+                <h2 class="section-title">Bullet Journal Habit & Metric Matrix</h2>
+                <span class="section-subtitle">Click cells to toggle: <strong class="legend-done">✓ Done</strong> · <strong class="legend-miss">✗ Missed</strong> · <span class="legend-blank">· Blank</span></span>
+              </div>
+              <div class="table-actions">
+                <div class="quick-filter-group">
+                  <button class="filter-chip active" data-filter="all">All Days</button>
+                  <button class="filter-chip" data-filter="weekends">Weekends</button>
+                  <button class="filter-chip" data-filter="weekdays">Weekdays</button>
+                  <button class="filter-chip" data-filter="incomplete">Incomplete</button>
+                </div>
+                <button id="quick-fill-today-btn" class="btn-secondary-sm">
+                  <span>⚡</span> Quick Log Today
+                </button>
+              </div>
+            </div>
+
+            <!-- Matrix Table Scroll Wrapper -->
+            <div class="matrix-table-wrapper" id="matrix-table-wrapper">
+              <table class="habit-matrix-table" id="habit-matrix-table">
+                <thead id="habit-matrix-head">
+                  <!-- Group Headers Row -->
+                  <tr class="header-group-row">
+                    <th colspan="2" class="th-group-date">DATE & DAY</th>
+                    <th colspan="4" class="th-group-metrics">DAILY METRICS (TIME / DURATION)</th>
+                    <th colspan="12" class="th-group-habits">HABITS & TASKS ROUTINE (12 CHECKBOXES)</th>
+                    <th class="th-group-progress">PROGRESS</th>
+                  </tr>
+                  <!-- Individual Column Headers Row -->
+                  <tr class="header-columns-row">
+                    <!-- Date Group -->
+                    <th class="col-date sticky-col-1" title="Date of Month">Day</th>
+                    <th class="col-weekday sticky-col-2" title="Day of Week">WkDay</th>
+
+                    <!-- Metrics Group -->
+                    <th class="col-metric" title="Wake up at? (hh:mm AM/PM)">
+                      <div class="th-content"><span class="th-icon">🌅</span> Wake Up</div>
+                    </th>
+                    <th class="col-metric" title="Sleep Duration (X hr Y m)">
+                      <div class="th-content"><span class="th-icon">🌙</span> Sleep Time</div>
+                    </th>
+                    <th class="col-metric" title="Study Duration (X hr Y m)">
+                      <div class="th-content"><span class="th-icon">📚</span> Study Time</div>
+                    </th>
+                    <th class="col-metric" title="Phone Screen Time (X hr Y m)">
+                      <div class="th-content"><span class="th-icon">📱</span> Screen Time</div>
+                    </th>
+
+                    <!-- Habits Group -->
+                    <th class="col-habit" data-habit-id="mediaAffirm" title="Media + Affirm">
+                      <div class="th-habit-rotate"><span class="habit-icon">📺</span> Media+Affirm</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="water3L" title="Water 3L">
+                      <div class="th-habit-rotate"><span class="habit-icon">💧</span> Water 3L</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="nomaf" title="NOMAF">
+                      <div class="th-habit-rotate"><span class="habit-icon">⚡</span> NOMAF</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="readBook" title="Read book">
+                      <div class="th-habit-rotate"><span class="habit-icon">📖</span> Read Book</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="vitaminD" title="Vitamin D Tablet">
+                      <div class="th-habit-rotate"><span class="habit-icon">☀️</span> Vitamin D</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="vitTabs" title="Vitamin tablets">
+                      <div class="th-habit-rotate"><span class="habit-icon">💊</span> Vit Tabs</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="gripper" title="Latitha Sahasra...">
+                      <div class="th-habit-rotate"><span class="habit-icon">🙏</span> Latitha</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="sakhaRahasya" title="Gripper">
+                      <div class="th-habit-rotate"><span class="habit-icon">✊</span> Gripper</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="nextDayTodo" title="Next day todo">
+                      <div class="th-habit-rotate"><span class="habit-icon">📝</span> Next Day Todo</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="skinCare" title="Skin care">
+                      <div class="th-habit-rotate"><span class="habit-icon">✨</span> Skin Care</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="workout10k" title="Workout / 10k">
+                      <div class="th-habit-rotate"><span class="habit-icon">🏋️</span> Workout/10k</div>
+                    </th>
+                    <th class="col-habit" data-habit-id="pray" title="Pray">
+                      <div class="th-habit-rotate"><span class="habit-icon">🙏</span> Pray</div>
+                    </th>
+
+                    <!-- Progress Column -->
+                    <th class="col-progress" title="Daily Completion Percentage">Daily %</th>
+                  </tr>
+                </thead>
+                <tbody id="habit-matrix-body">
+                  <!-- Rows 1-31 dynamically rendered by JS -->
+                </tbody>
+                <tfoot id="habit-matrix-foot">
+                  <!-- Auto-calculated daily averages & sums dynamically rendered -->
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB: DEDICATED STREAKS & HABIT CONSISTENCY HUB -->
+      <!-- ============================================== -->
+      <section id="streaks-tab" class="tab-pane">
+        <!-- Dynamically rendered by streaks.js -->
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 2: MONTHLY GOALS, FOCUS & STRATEGY         -->
+      <!-- ============================================== -->
+      <section id="goals-tab" class="tab-pane">
+        <div class="goals-page-layout">
+          <!-- Monthly Focus & Theme Hero Banner -->
+          <div class="goals-hero-banner">
+            <div class="goals-hero-left">
+              <div class="goals-hero-icon">🪐</div>
+              <div class="goals-hero-text">
+                <span class="goals-hero-label">MONTHLY THEME & GRAVITY GAINED</span>
+                <input type="text" id="goals-tab-theme-input" class="goals-theme-input" placeholder="Theme: e.g. Unshakable Focus & Physical Mastery" />
+                <p class="goals-motto-quote" id="goals-tab-motto">“Discipline is choosing between what you want now and what you want most.”</p>
+              </div>
+            </div>
+            <div class="goals-progress-card">
+              <div class="goals-progress-header">
+                <span class="goals-progress-title">Objectives Progress</span>
+                <span class="goals-progress-pct" id="goals-progress-pct-val">0%</span>
+              </div>
+              <div class="goals-progress-bar-track">
+                <div class="goals-progress-bar-fill" id="goals-progress-bar-fill" style="width: 0%"></div>
+              </div>
+              <span class="goals-progress-subtext" id="goals-progress-count-text">0 of 0 Completed</span>
+            </div>
+          </div>
+
+          <!-- Goals Main Grid Layout -->
+          <div class="goals-content-grid">
+            <!-- Left Column: Categorized Objectives Board -->
+            <div class="goals-main-board">
+              <!-- Add Goal Form -->
+              <div class="goal-creator-card">
+                <div class="card-title-group">
+                  <span class="card-icon">🎯</span>
+                  <h3 class="card-title">Add Monthly Objective / Milestone</h3>
+                </div>
+                <form id="goals-tab-add-form" class="goal-add-form">
+                  <input type="text" id="goals-tab-input-text" class="goal-text-field" placeholder="Define a clear, measurable monthly objective..." required />
+                  <div class="goal-form-controls">
+                    <select id="goals-tab-category-select" class="goal-select" title="Category">
+                      <option value="tech">💻 Technical & Projects</option>
+                      <option value="discipline">⚡ Discipline</option>
+                      <option value="physical">🏋️ Physical</option>
+                      <option value="learning">📖 Learning</option>
+                      <option value="spiritual">🧘 Spiritual</option>
+                    </select>
+                    <select id="goals-tab-priority-select" class="goal-select" title="Priority">
+                      <option value="high">🔴 High Priority</option>
+                      <option value="med" selected>🟡 Medium Priority</option>
+                      <option value="low">🔵 Low Priority</option>
+                    </select>
+                    <button type="submit" class="btn-primary" style="padding: 7px 16px;">
+                      <span>+</span> Add Goal
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Objectives List Container -->
+              <div class="goals-list-card">
+                <div class="goals-list-header">
+                  <div class="card-title-group">
+                    <span class="card-icon">📋</span>
+                    <h3 class="card-title">Monthly Objectives & Action Items</h3>
+                  </div>
+                  <div class="goals-filter-chips">
+                    <button class="goal-filter-btn active" data-goal-filter="all">All</button>
+                    <button class="goal-filter-btn" data-goal-filter="pending">Pending</button>
+                    <button class="goal-filter-btn" data-goal-filter="completed">Completed</button>
+                  </div>
+                </div>
+                <div class="goals-items-wrapper">
+                  <ul id="goals-tab-items-list" class="goals-items-list">
+                    <!-- Dynamically rendered by goals.js -->
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 3: INTERACTIVE CALENDAR & GRADIENT HEATMAP -->
+      <!-- ============================================== -->
+      <section id="calendar-tab" class="tab-pane">
+        <div class="calendar-page-layout">
+          <!-- Calendar Header & Controls -->
+          <div class="calendar-header-banner">
+            <div class="cal-banner-left">
+              <h2 class="section-title">Color-Coded Habit Completion Heatmap</h2>
+              <p class="section-subtitle">Visual gradient representation of your daily execution intensity across <span id="cal-banner-month-name">September 2026</span></p>
+            </div>
+            <div class="cal-gradient-legend">
+              <span class="legend-title">Completion Intensity:</span>
+              <div class="legend-gradient-bar">
+                <div class="legend-step step-0" title="0% Completed (No Color / Rest / Missed)"><span>0%</span></div>
+                <div class="legend-step step-25" title="1-25% (Subtle Sage Green)"><span>25%</span></div>
+                <div class="legend-step step-50" title="26-50% (Medium Emerald)"><span>50%</span></div>
+                <div class="legend-step step-75" title="51-75% (Forest Jade Green)"><span>75%</span></div>
+                <div class="legend-step step-90" title="76-99% (Intense Electric Emerald)"><span>90%</span></div>
+                <div class="legend-step step-100" title="100% (Luminous Radiant Emerald Glow)"><span>100% 🌟</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calendar Matrix Grid -->
+          <div class="calendar-grid-card">
+            <div class="calendar-weekdays-row">
+              <div class="cal-weekday-header">Sun</div>
+              <div class="cal-weekday-header">Mon</div>
+              <div class="cal-weekday-header">Tue</div>
+              <div class="cal-weekday-header">Wed</div>
+              <div class="cal-weekday-header">Thu</div>
+              <div class="cal-weekday-header">Fri</div>
+              <div class="cal-weekday-header">Sat</div>
+            </div>
+            <div class="calendar-days-grid" id="calendar-days-grid">
+              <!-- Dynamically populated month calendar cells with gradient styling -->
+            </div>
+          </div>
+
+          <!-- Monthly Distribution Quick Stats -->
+          <div class="calendar-summary-cards">
+            <div class="cal-stat-card">
+              <div class="stat-icon-wrap gold-glow">🌟</div>
+              <div class="stat-details">
+                <span class="stat-value" id="cal-perfect-days-count">0</span>
+                <span class="stat-label">Perfect Days (100%)</span>
+              </div>
+            </div>
+            <div class="cal-stat-card">
+              <div class="stat-icon-wrap emerald-glow">⚡</div>
+              <div class="stat-details">
+                <span class="stat-value" id="cal-strong-days-count">0</span>
+                <span class="stat-label">Strong Days (≥75%)</span>
+              </div>
+            </div>
+            <div class="cal-stat-card">
+              <div class="stat-icon-wrap cyan-glow">📚</div>
+              <div class="stat-details">
+                <span class="stat-value" id="cal-total-study-hours">0h</span>
+                <span class="stat-label">Total Study Time</span>
+              </div>
+            </div>
+            <div class="cal-stat-card">
+              <div class="stat-icon-wrap purple-glow">🎯</div>
+              <div class="stat-details">
+                <span class="stat-value" id="cal-avg-completion-rate">0%</span>
+                <span class="stat-label">Monthly Average</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 3: ANALYTICS, TRENDS & CORRELATION DASHBOARD -->
+      <!-- ============================================== -->
+      <section id="analytics-tab" class="tab-pane">
+        <div class="analytics-page-layout">
+          <!-- Top Analytics KPI Grid -->
+          <div class="analytics-kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Monthly Routine Score</span>
+                <span class="kpi-icon">🏆</span>
+              </div>
+              <div class="kpi-body">
+                <span class="kpi-value" id="kpi-monthly-score">0</span>
+                <span class="kpi-subtext">Composite productivity index</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Average Sleep Duration</span>
+                <span class="kpi-icon">🌙</span>
+              </div>
+              <div class="kpi-body">
+                <span class="kpi-value" id="kpi-avg-sleep">0h 0m</span>
+                <span class="kpi-subtext" id="kpi-sleep-quality">Optimal recovery</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Study vs Screen Ratio</span>
+                <span class="kpi-icon">⚖️</span>
+              </div>
+              <div class="kpi-body">
+                <span class="kpi-value" id="kpi-study-screen-ratio">1.0x</span>
+                <span class="kpi-subtext" id="kpi-ratio-subtext">Deep focus multiplier</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Most Consistent Habit</span>
+                <span class="kpi-icon">🥇</span>
+              </div>
+              <div class="kpi-body">
+                <span class="kpi-value" id="kpi-top-habit">-</span>
+                <span class="kpi-subtext" id="kpi-top-habit-pct">0% success rate</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Analytics Charts Grid -->
+          <div class="analytics-charts-grid">
+            <!-- Chart 1: Time Metrics Correlation (Line/Bar) -->
+            <div class="chart-card wide-card">
+              <div class="chart-card-header">
+                <div class="chart-title-group">
+                  <h3 class="chart-title">Daily Time Allocation: Study vs Screen vs Sleep</h3>
+                  <span class="chart-subtitle">Day-by-day duration tracking in hours across the month</span>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="time-metrics-chart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Habit Consistency Ranking (Horizontal Bar) -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <div class="chart-title-group">
+                  <h3 class="chart-title">Habit Consistency Breakdown</h3>
+                  <span class="chart-subtitle">Completion percentage for each of the 12 habits</span>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="habit-consistency-chart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 3: Weekly Performance Comparison -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <div class="chart-title-group">
+                  <h3 class="chart-title">Weekly Performance Trends</h3>
+                  <span class="chart-subtitle">Habits completed and study hours by week (W1–W5)</span>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="weekly-trends-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 4: GAMIFICATION, XP, QUESTS & BADGES -->
+      <!-- ============================================== -->
+      <section id="gamification-tab" class="tab-pane">
+        <div class="gamification-page-layout">
+          <!-- Hero Character / Level Card -->
+          <div class="gamification-hero-card">
+            <div class="hero-avatar-wrap">
+              <div class="avatar-ring">
+                <div class="avatar-icon" id="hero-avatar-icon">⚔️</div>
+              </div>
+              <div class="hero-level-tag" id="hero-level-tag">Level 1</div>
+            </div>
+            <div class="hero-stats-info">
+              <div class="hero-title-row">
+                <h2 class="hero-rank-name" id="hero-rank-name">Novice Aspirant</h2>
+                <div class="hero-total-xp" id="hero-total-xp-display">0 Total XP</div>
+              </div>
+              <p class="hero-rank-desc" id="hero-rank-desc">Begin your journey of unbreakable habits and mental mastery.</p>
+              
+              <!-- Large XP Bar -->
+              <div class="hero-xp-container">
+                <div class="hero-xp-bar-labels">
+                  <span>Current Level Progress</span>
+                  <span id="hero-xp-progress-text">0 / 500 XP (0%)</span>
+                </div>
+                <div class="hero-xp-bar-track">
+                  <div class="hero-xp-bar-fill" id="hero-xp-bar-fill" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Mini Attributes -->
+              <div class="hero-attributes-row">
+                <div class="attr-pill">
+                  <span class="attr-icon">💧</span>
+                  <span class="attr-label">Hydration:</span>
+                  <span class="attr-val" id="attr-hydration">0/31</span>
+                </div>
+                <div class="attr-pill">
+                  <span class="attr-icon">⚡</span>
+                  <span class="attr-label">Discipline:</span>
+                  <span class="attr-val" id="attr-discipline">0/31</span>
+                </div>
+                <div class="attr-pill">
+                  <span class="attr-icon">📚</span>
+                  <span class="attr-label">Intellect:</span>
+                  <span class="attr-val" id="attr-intellect">0 hrs</span>
+                </div>
+                <div class="attr-pill">
+                  <span class="attr-icon">🧘</span>
+                  <span class="attr-label">Mindfulness:</span>
+                  <span class="attr-val" id="attr-mindfulness">0/31</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quests & Badges Grid -->
+          <div class="game-content-grid">
+            <!-- Active Quests Panel -->
+            <div class="game-panel-card quests-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <span class="panel-icon">📜</span>
+                  <h3 class="panel-title">Active Quests & Bounties</h3>
+                </div>
+                <span class="badge-chip">Daily & Monthly</span>
+              </div>
+              <div class="quests-list" id="quests-list">
+                <!-- Dynamically populated quest cards -->
+              </div>
+            </div>
+
+            <!-- Achievement Badges Showcase -->
+            <div class="game-panel-card badges-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <span class="panel-icon">🏅</span>
+                  <h3 class="panel-title">Mastery Badges & Trophies</h3>
+                </div>
+                <span class="badge-chip" id="badge-completion-summary">0 / 12 Unlocked</span>
+              </div>
+              <div class="badges-grid" id="badges-grid">
+                <!-- Dynamically populated achievement badges -->
+              </div>
+            </div>
+          </div>
+
+          <!-- XP Discipline Engine & Level Progression Hierarchy -->
+          <div class="game-content-grid xp-guide-grid">
+            <!-- XP Breakdown & Dynamic Days Rules -->
+            <div class="game-panel-card xp-breakdown-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <span class="panel-icon">⚡</span>
+                  <h3 class="panel-title">XP Economics & Commitment Rules</h3>
+                </div>
+                <span class="badge-chip gold-chip">Days-Scaled Engine</span>
+              </div>
+              <div class="xp-engine-content">
+                <p class="xp-engine-desc">
+                  XP rewards scale directly with the scheduled frequency and discipline commitment of each habit:
+                </p>
+                <div class="xp-rules-chips-grid">
+                  <div class="xp-rule-card">
+                    <div class="rule-top">
+                      <span class="rule-icon">🔥</span>
+                      <span class="rule-title">Daily Habits (7x/wk)</span>
+                    </div>
+                    <div class="rule-reward">+10 XP <small>/ check</small></div>
+                    <div class="rule-sub">30–31 target days/mo</div>
+                  </div>
+                  <div class="xp-rule-card">
+                    <div class="rule-top">
+                      <span class="rule-icon">⚡</span>
+                      <span class="rule-title">Intense (5–6x/wk)</span>
+                    </div>
+                    <div class="rule-reward">+8 to +9 XP <small>/ check</small></div>
+                    <div class="rule-sub">22–27 target days/mo</div>
+                  </div>
+                  <div class="xp-rule-card">
+                    <div class="rule-top">
+                      <span class="rule-icon">🎯</span>
+                      <span class="rule-title">Moderate (3–4x/wk)</span>
+                    </div>
+                    <div class="rule-reward">+5 to +6 XP <small>/ check</small></div>
+                    <div class="rule-sub">13–18 target days/mo</div>
+                  </div>
+                  <div class="xp-rule-card">
+                    <div class="rule-top">
+                      <span class="rule-icon">🌱</span>
+                      <span class="rule-title">Weekly (1–2x/wk)</span>
+                    </div>
+                    <div class="rule-reward">+3 to +4 XP <small>/ check</small></div>
+                    <div class="rule-sub">4–9 target days/mo</div>
+                  </div>
+                </div>
+
+                <!-- XP Source Live Breakdown -->
+                <div class="xp-live-breakdown-box">
+                  <h4 class="breakdown-title">Live XP Composition</h4>
+                  <div class="breakdown-chips-row" id="xp-breakdown-chips">
+                    <!-- Populated dynamically by gamification.js -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 50-Tier Level Mastery Ladder -->
+            <div class="game-panel-card levels-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <span class="panel-icon">👑</span>
+                  <h3 class="panel-title">50-Tier Mastery Ladder</h3>
+                </div>
+                <span class="badge-chip" id="current-tier-indicator-pill">Level 1 Novice</span>
+              </div>
+              <div class="levels-ladder-wrap" id="levels-ladder-list">
+                <!-- Dynamically populated 15 level tiers ladder -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 5: HABIT CONFIGURATION & FREQUENCY STUDIO -->
+      <!-- ============================================== -->
+      <section id="habits-tab" class="tab-pane">
+        <!-- Dynamically rendered by habitsManager.js -->
+      </section>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- MODALS & OVERLAYS -->
+    <!-- ============================================== -->
+
+    <!-- Day Detail & Focus Log Modal -->
+    <div id="day-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="day-modal-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <h3 id="day-modal-title" class="modal-title">Day Focus Editor</h3>
+            <span id="day-modal-subtitle" class="modal-subtitle">September 1, 2026 (Tuesday)</span>
+          </div>
+          <button class="modal-close-btn" data-close-modal="day-modal" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body" id="day-modal-body">
+          <!-- Dynamic form content for the selected day -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn-ghost" data-close-modal="day-modal">Cancel</button>
+          <button id="save-day-modal-btn" class="btn-primary">Save & Apply</button>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Data Backup / Export / Import Modal -->
+    <div id="data-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="data-modal-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <h3 id="data-modal-title" class="modal-title">Data Backup & Export Engine</h3>
+            <span class="modal-subtitle">Manage, export, and restore your Bullet Journal data</span>
+          </div>
+          <button class="modal-close-btn" data-close-modal="data-modal" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="data-actions-grid">
+            <div class="data-action-card">
+              <h4>📥 Export as JSON</h4>
+              <p>Download your complete habit history, logs, quests, and to-do items as a single JSON file.</p>
+              <button id="export-json-btn" class="btn-secondary-sm">Export JSON</button>
+            </div>
+            <div class="data-action-card">
+              <h4>📊 Export as CSV</h4>
+              <p>Export the current month's table format for Excel, Google Sheets, or Notion.</p>
+              <button id="export-csv-btn" class="btn-secondary-sm">Export CSV</button>
+            </div>
+            <div class="data-action-card">
+              <h4>📤 Import Backup</h4>
+              <p>Restore your habits and data from a previously saved JSON file.</p>
+              <input type="file" id="import-json-input" accept=".json" class="file-input-hidden" />
+              <button id="trigger-import-btn" class="btn-secondary-sm">Select JSON File</button>
+            </div>
+            <div class="data-action-card">
+              <h4>⚡ Load Demo / Sample Data</h4>
+              <p>Populate August 2026 demo data with realistic habits, study logs, and streaks.</p>
+              <button id="load-sample-data-btn" class="btn-secondary-sm">Load Demo Data</button>
+            </div>
+          </div>
+          <div class="danger-zone-box">
+            <div class="danger-info">
+              <strong>Reset Month Data</strong>
+              <span>Clear all data for the currently selected month only.</span>
+            </div>
+            <button id="reset-month-data-btn" class="btn-danger-sm">Clear Month</button>
+          </div>
+          <div class="danger-zone-box" style="margin-top: 10px; border-color: rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.08);">
+            <div class="danger-info">
+              <strong>Wipe Database & Start September</strong>
+              <span>Completely reset all logs, streaks, and XP to start clean from September 2026.</span>
+            </div>
+            <button id="clear-all-db-btn" class="btn-danger-sm" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #f87171; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);">Wipe Database</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-ghost" data-close-modal="data-modal">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievement Toast Notification Notification Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
