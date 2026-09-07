@@ -227,6 +227,7 @@ class AppState {
     this.sanitizeUnscheduledDays();
     this.autoMarkPastUnloggedHabits();
     this.saveToStorage();
+    this.initCrossTabSync();
   }
 
   getTodayDate() {
@@ -913,6 +914,48 @@ class AppState {
     this.notify();
   }
 
+  // Cross-Tab Real-time Synchronization Engine
+  initCrossTabSync() {
+    if (this._syncInitialized) return;
+    this._syncInitialized = true;
+
+    // 1. BroadcastChannel for instant cross-tab messaging
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        this.broadcastChannel = new BroadcastChannel('chronolog_sync_channel');
+        this.broadcastChannel.onmessage = (event) => {
+          if (event.data && event.data.type === 'SYNC_STATE') {
+            this.loadFromStorage();
+            this.notify();
+          }
+        };
+      } catch (e) {
+        console.warn('BroadcastChannel error:', e);
+      }
+    }
+
+    // 2. Storage event listener (fires on all other open tabs of the same domain/URL)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'chronolog_bullet_journal_db' || !e.key) {
+        this.loadFromStorage();
+        this.notify();
+      }
+    });
+
+    // 3. Re-sync when switching focus back to this tab
+    window.addEventListener('focus', () => {
+      this.loadFromStorage();
+      this.notify();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.loadFromStorage();
+        this.notify();
+      }
+    });
+  }
+
   // Storage Persistence
   saveToStorage() {
     try {
@@ -922,9 +965,19 @@ class AppState {
         theme: this.theme,
         soundEnabled: this.soundEnabled,
         habits: this.habits,
-        allMonthsData: this.allMonthsData
+        allMonthsData: this.allMonthsData,
+        timestamp: Date.now()
       };
       localStorage.setItem('chronolog_bullet_journal_db', JSON.stringify(payload));
+
+      // Broadcast update to all other open tabs immediately
+      if (this.broadcastChannel) {
+        try {
+          this.broadcastChannel.postMessage({ type: 'SYNC_STATE', timestamp: Date.now() });
+        } catch (err) {
+          // Ignore broadcast failures
+        }
+      }
     } catch (e) {
       console.warn('Storage save failed:', e);
     }
@@ -938,9 +991,11 @@ class AppState {
         if (Array.isArray(parsed.habits) && parsed.habits.length > 0) {
           this.habits = parsed.habits;
         }
-        if (parsed.allMonthsData) this.allMonthsData = parsed.allMonthsData;
-        if (parsed.currentYear) this.currentYear = parsed.currentYear;
-        if (parsed.currentMonth) this.currentMonth = parsed.currentMonth;
+        if (parsed.allMonthsData && typeof parsed.allMonthsData === 'object') {
+          this.allMonthsData = parsed.allMonthsData;
+        }
+        if (parsed.currentYear) this.currentYear = parseInt(parsed.currentYear, 10);
+        if (parsed.currentMonth) this.currentMonth = parseInt(parsed.currentMonth, 10);
         if (parsed.theme) {
           this.theme = parsed.theme;
           document.documentElement.setAttribute('data-theme', this.theme);
