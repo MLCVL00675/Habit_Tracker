@@ -929,6 +929,10 @@ class AppState {
     };
   }
 
+  getGamificationOverview() {
+    return this.calculateGamificationStats();
+  }
+
   checkMilestonesAndNotify(day) {
     const monthData = this.getCurrentMonthData();
     const dayRecord = monthData.days[day];

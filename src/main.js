@@ -78,35 +78,53 @@ function updateHeaderMonthInfo() {
 
 // Render Active View
 function renderActiveView() {
-  if (activeTab === 'grid-tab') {
-    renderMatrixTable();
-  } else if (activeTab === 'streaks-tab') {
-    renderStreaksView();
-  } else if (activeTab === 'goals-tab') {
-    renderGoalsView();
-  } else if (activeTab === 'calendar-tab') {
-    renderCalendarView();
-  } else if (activeTab === 'analytics-tab') {
-    renderAnalyticsView();
-  } else if (activeTab === 'gamification-tab') {
-    renderGamificationView();
-  } else if (activeTab === 'habits-tab') {
-    renderHabitsManagerView();
+  try {
+    if (activeTab === 'grid-tab') {
+      renderMatrixTable();
+    } else if (activeTab === 'streaks-tab') {
+      renderStreaksView();
+    } else if (activeTab === 'goals-tab') {
+      renderGoalsView();
+    } else if (activeTab === 'calendar-tab') {
+      renderCalendarView();
+    } else if (activeTab === 'analytics-tab') {
+      renderAnalyticsView();
+    } else if (activeTab === 'gamification-tab') {
+      renderGamificationView();
+    } else if (activeTab === 'habits-tab') {
+      renderHabitsManagerView();
+    }
+  } catch (err) {
+    console.error(`Error rendering active tab ${activeTab}:`, err);
   }
 
   // Always update global header stats and badges
-  renderGamificationView();
-  renderGoalsView();
+  try {
+    renderGamificationView();
+    renderGoalsView();
+  } catch (err) {
+    console.warn('Error updating header stats:', err);
+  }
 }
 
 function renderAllViews() {
-  renderMatrixTable();
-  renderStreaksView();
-  renderGoalsView();
-  renderCalendarView();
-  renderAnalyticsView();
-  renderGamificationView();
-  renderHabitsManagerView();
+  const views = [
+    { name: 'Grid', fn: renderMatrixTable },
+    { name: 'Streaks', fn: renderStreaksView },
+    { name: 'Goals', fn: renderGoalsView },
+    { name: 'Calendar', fn: renderCalendarView },
+    { name: 'Analytics', fn: renderAnalyticsView },
+    { name: 'Gamification', fn: renderGamificationView },
+    { name: 'Habits', fn: renderHabitsManagerView }
+  ];
+
+  views.forEach(v => {
+    try {
+      v.fn();
+    } catch (err) {
+      console.error(`Error rendering ${v.name} view:`, err);
+    }
+  });
 }
 
 // --------------------------------------------------------------------------
