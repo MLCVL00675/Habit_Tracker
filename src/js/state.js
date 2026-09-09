@@ -4,6 +4,7 @@
 
 import { MONTH_NAMES, getDaysInMonth, getDayOfWeek, parseDurationToMinutes, sound, showToast, triggerConfetti } from './utils.js';
 import { authManager } from './auth.js';
+import { db } from './db.js';
 
 // Default Initial 12 Bullet Journal Habits with Frequency Configurations
 export const DEFAULT_HABITS = [
@@ -993,10 +994,13 @@ class AppState {
     });
   }
 
-  // Storage Persistence (User Scoped)
+  // Storage Persistence (User Scoped + IndexedDB Database Engine)
   saveToStorage() {
     try {
       const storageKey = this.getStorageKey();
+      const activeUser = authManager.getActiveUser();
+      const userId = activeUser ? activeUser.id : 'guest_user';
+
       const payload = {
         currentYear: this.currentYear,
         currentMonth: this.currentMonth,
@@ -1014,6 +1018,10 @@ class AppState {
       if (authManager.isGuest()) {
         localStorage.setItem('chronolog_bullet_journal_db', JSON.stringify(payload));
       }
+
+      // Asynchronously mirror to IndexedDB database
+      db.saveAllMonthsForUser(userId, this.allMonthsData);
+      db.saveUserHabits(userId, this.habits);
 
       // Broadcast update to all other open tabs immediately
       if (this.broadcastChannel) {
@@ -1063,6 +1071,40 @@ class AppState {
       }
     } catch (e) {
       console.warn('Storage load error:', e);
+    }
+
+    // Trigger async sync with IndexedDB in background
+    this.syncWithIndexedDB();
+  }
+
+  async syncWithIndexedDB() {
+    try {
+      await db.init();
+      const activeUser = authManager.getActiveUser();
+      const userId = activeUser ? activeUser.id : 'guest_user';
+
+      const [dbMonths, dbHabits] = await Promise.all([
+        db.getAllMonthsForUser(userId),
+        db.getUserHabits(userId)
+      ]);
+
+      let hasNewData = false;
+      if (dbHabits && Array.isArray(dbHabits) && dbHabits.length > 0 && (!this.habits || this.habits.length === 0)) {
+        this.habits = dbHabits;
+        hasNewData = true;
+      }
+
+      if (dbMonths && Object.keys(dbMonths).length > 0 && Object.keys(this.allMonthsData).length === 0) {
+        this.allMonthsData = dbMonths;
+        hasNewData = true;
+      }
+
+      if (hasNewData) {
+        this.saveToStorage();
+        this.notify();
+      }
+    } catch (e) {
+      console.warn('IndexedDB sync error:', e);
     }
   }
 

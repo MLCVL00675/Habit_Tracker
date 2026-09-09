@@ -2,6 +2,8 @@
    CHRONOLOG // AUTHENTICATION & USER SESSION ENGINE
    ========================================================================== */
 
+import { db } from './db.js';
+
 // Storage Keys
 const STORAGE_USERS_KEY = 'chronolog_users_registry';
 const STORAGE_SESSION_KEY = 'chronolog_active_session';
@@ -44,8 +46,23 @@ class AuthManager {
     this.init();
   }
 
-  init() {
+  async init() {
     this.loadSession();
+    // Background sync from IndexedDB
+    try {
+      await db.init();
+      const dbUsers = await db.getAllUsers();
+      if (Array.isArray(dbUsers) && dbUsers.length > 0) {
+        const localUsers = this.getAllUsers();
+        const mergedMap = new Map();
+        localUsers.forEach(u => mergedMap.set(u.id, u));
+        dbUsers.forEach(u => mergedMap.set(u.id, u));
+        const merged = Array.from(mergedMap.values());
+        localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(merged));
+      }
+    } catch (e) {
+      console.warn('DB init in auth error:', e);
+    }
   }
 
   subscribe(listener) {
@@ -81,6 +98,8 @@ class AuthManager {
   saveUsersRegistry(users) {
     try {
       localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+      // Asynchronously mirror to IndexedDB
+      users.forEach(u => db.saveUser(u));
     } catch (e) {
       console.error('Failed to save users registry:', e);
     }

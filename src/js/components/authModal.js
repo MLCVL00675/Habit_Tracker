@@ -633,6 +633,18 @@ export function renderProfileDrawer() {
       </div>
     </div>
 
+    <!-- Active Database Engine Status -->
+    <div class="drawer-db-status-card">
+      <div class="db-status-left">
+        <span class="db-pulse-dot"></span>
+        <div class="db-status-meta">
+          <span class="db-status-title">IndexedDB Engine</span>
+          <span class="db-status-sub">High-capacity persistent client database</span>
+        </div>
+      </div>
+      <span class="db-badge-connected">● Active</span>
+    </div>
+
     <!-- Quick Stats Grid -->
     <div class="drawer-stats-grid">
       <div class="drawer-stat-card">

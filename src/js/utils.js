@@ -204,6 +204,14 @@ export function calculateHabitStreaks(monthData, habitOrId, totalDays, isHabitSc
   const freqType = habitObj?.frequencyType || 'daily';
   const weeklyTarget = habitObj?.weeklyTarget || 7;
 
+  if (!monthData || !monthData.days) {
+    return { 
+      currentStreak: 0, 
+      bestStreak: 0, 
+      weeklyStats: { consecutiveWeeks: 0, currentWeekDone: 0, weeklyTarget } 
+    };
+  }
+
   let currentStreak = 0;
   let bestStreak = 0;
 
