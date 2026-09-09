@@ -100,6 +100,11 @@
           <span class="streak-label">DAY STREAK</span>
         </div>
 
+        <!-- User Profile & Authentication Pill -->
+        <div id="header-user-pill-container" class="header-user-pill-wrap">
+          <!-- Rendered dynamically by authModal.js -->
+        </div>
+
         <div class="header-actions">
           <button id="sound-toggle-btn" class="icon-btn" title="Toggle Sound Effects" aria-label="Toggle Sound Effects">
             <span id="sound-icon">🔊</span>
@@ -806,6 +811,31 @@
         <div class="modal-footer">
           <button class="btn-ghost" data-close-modal="data-modal">Close</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- AUTHENTICATION & PROFILE MODALS -->
+    <!-- ============================================== -->
+
+    <!-- Auth Modal (Sign In / Register / Switch / Guest) -->
+    <div id="auth-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <div class="modal-card auth-modal-card" id="auth-modal-content">
+        <!-- Rendered dynamically by authModal.js -->
+      </div>
+    </div>
+
+    <!-- User Profile & Account Management Drawer -->
+    <div id="profile-drawer" class="drawer-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="drawer-panel" id="profile-drawer-content">
+        <!-- Rendered dynamically by authModal.js -->
+      </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card" id="edit-profile-modal-content">
+        <!-- Rendered dynamically by authModal.js -->
       </div>
     </div>
 

@@ -1,8 +1,5 @@
-/* ==========================================================================
-   CHRONOLOG // APPLICATION ENTRY POINT & ROUTER
-   ========================================================================== */
-
 import { state } from './js/state.js';
+import { authManager } from './js/auth.js';
 import { MONTH_NAMES, getDaysInMonth, getDayOfWeek, WEEKDAYS_SHORT, showToast, triggerConfetti } from './js/utils.js';
 import { renderMatrixTable } from './js/components/grid.js';
 import { renderStreaksView } from './js/components/streaks.js';
@@ -12,17 +9,30 @@ import { renderAnalyticsView } from './js/components/analytics.js';
 import { renderGamificationView } from './js/components/gamification.js';
 import { renderHabitsManagerView } from './js/components/habitsManager.js';
 import { showConfirmDialog } from './js/components/confirmModal.js';
+import { initAuthUI, showAuthModal, updateHeaderUserPill } from './js/components/authModal.js';
 
 // Active Tab tracker
 let activeTab = 'grid-tab';
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
+  // 1. Initialize Auth Session
+  authManager.init();
+  if (!authManager.isLoggedIn()) {
+    // Default to guest session on initial load so app is instantly usable
+    authManager.loginAsGuest();
+  }
+
+  // 2. Initialize State
   state.init();
+
+  // 3. Initialize Auth & Profile UI
+  initAuthUI();
 
   // Subscribe UI renders to state changes
   state.subscribe(() => {
     updateHeaderMonthInfo();
+    updateHeaderUserPill();
     renderActiveView();
   });
 
@@ -36,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial Full Render
   updateHeaderMonthInfo();
+  updateHeaderUserPill();
   renderAllViews();
 
   // Lifecycle Auto-Save Hooks (ensures data is flushed to localStorage on tab close, reload, or backgrounding)
@@ -243,6 +254,15 @@ function initModalHandlers() {
 
   // Close on backdrop click
   document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) {
+        backdrop.classList.add('hidden');
+      }
+    });
+  });
+
+  // Close drawer on backdrop click
+  document.querySelectorAll('.drawer-backdrop').forEach(backdrop => {
     backdrop.addEventListener('click', (e) => {
       if (e.target === backdrop) {
         backdrop.classList.add('hidden');

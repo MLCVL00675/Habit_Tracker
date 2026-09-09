@@ -3,6 +3,7 @@
    ========================================================================== */
 
 import { MONTH_NAMES, getDaysInMonth, getDayOfWeek, parseDurationToMinutes, sound, showToast, triggerConfetti } from './utils.js';
+import { authManager } from './auth.js';
 
 // Default Initial 12 Bullet Journal Habits with Frequency Configurations
 export const DEFAULT_HABITS = [
@@ -228,6 +229,42 @@ class AppState {
     this.autoMarkPastUnloggedHabits();
     this.saveToStorage();
     this.initCrossTabSync();
+
+    // Subscribe to auth events (login, logout, switch account, register)
+    authManager.subscribe((event, data, activeUser) => {
+      if (['LOGIN_SUCCESS', 'REGISTER_SUCCESS', 'ACCOUNT_SWITCH', 'GUEST_LOGIN', 'LOGOUT', 'GUEST_CONVERTED'].includes(event)) {
+        this.bindUser(activeUser, data && data.sampleData);
+      }
+    });
+  }
+
+  getStorageKey() {
+    return authManager.getUserStorageKey();
+  }
+
+  bindUser(user, loadSample = false) {
+    // Reset in-memory state before loading user profile
+    this.currentYear = 2026;
+    this.currentMonth = 9;
+    this.habits = DEFAULT_HABITS.map(h => ({ ...h }));
+    this.allMonthsData = {};
+
+    this.loadFromStorage();
+
+    if (loadSample && Object.keys(this.allMonthsData).length === 0) {
+      this.allMonthsData['2026-08'] = createSampleAugust2026Data(this.habits);
+      this.currentMonth = 8;
+    }
+
+    const currentKey = this.getMonthKey();
+    if (!this.allMonthsData[currentKey]) {
+      this.allMonthsData[currentKey] = createDefaultMonthData(this.currentYear, this.currentMonth, this.habits);
+    }
+
+    this.sanitizeUnscheduledDays();
+    this.autoMarkPastUnloggedHabits();
+    this.saveToStorage();
+    this.notify();
   }
 
   getTodayDate() {
@@ -956,24 +993,32 @@ class AppState {
     });
   }
 
-  // Storage Persistence
+  // Storage Persistence (User Scoped)
   saveToStorage() {
     try {
+      const storageKey = this.getStorageKey();
       const payload = {
         currentYear: this.currentYear,
         currentMonth: this.currentMonth,
         theme: this.theme,
         soundEnabled: this.soundEnabled,
+        filterMode: this.filterMode,
+        streakSortMode: this.streakSortMode,
         habits: this.habits,
         allMonthsData: this.allMonthsData,
         timestamp: Date.now()
       };
-      localStorage.setItem('chronolog_bullet_journal_db', JSON.stringify(payload));
+      localStorage.setItem(storageKey, JSON.stringify(payload));
+
+      // Also mirror to fallback for standalone guest safety
+      if (authManager.isGuest()) {
+        localStorage.setItem('chronolog_bullet_journal_db', JSON.stringify(payload));
+      }
 
       // Broadcast update to all other open tabs immediately
       if (this.broadcastChannel) {
         try {
-          this.broadcastChannel.postMessage({ type: 'SYNC_STATE', timestamp: Date.now() });
+          this.broadcastChannel.postMessage({ type: 'SYNC_STATE', storageKey, timestamp: Date.now() });
         } catch (err) {
           // Ignore broadcast failures
         }
@@ -985,7 +1030,14 @@ class AppState {
 
   loadFromStorage() {
     try {
-      const raw = localStorage.getItem('chronolog_bullet_journal_db');
+      const storageKey = this.getStorageKey();
+      let raw = localStorage.getItem(storageKey);
+      
+      // Fallback migration for guest / initial user from legacy db
+      if (!raw && authManager.isGuest()) {
+        raw = localStorage.getItem('chronolog_bullet_journal_db');
+      }
+
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed.habits) && parsed.habits.length > 0) {
@@ -996,6 +1048,8 @@ class AppState {
         }
         if (parsed.currentYear) this.currentYear = parseInt(parsed.currentYear, 10);
         if (parsed.currentMonth) this.currentMonth = parseInt(parsed.currentMonth, 10);
+        if (parsed.streakSortMode) this.streakSortMode = parsed.streakSortMode;
+        if (parsed.filterMode) this.filterMode = parsed.filterMode;
         if (parsed.theme) {
           this.theme = parsed.theme;
           document.documentElement.setAttribute('data-theme', this.theme);
@@ -1010,6 +1064,38 @@ class AppState {
     } catch (e) {
       console.warn('Storage load error:', e);
     }
+  }
+
+  exportUserData() {
+    const user = authManager.getActiveUser();
+    return {
+      version: '2.6',
+      exportedAt: new Date().toISOString(),
+      user: user ? { name: user.name, email: user.email, avatar: user.avatar } : null,
+      currentYear: this.currentYear,
+      currentMonth: this.currentMonth,
+      theme: this.theme,
+      habits: this.habits,
+      allMonthsData: this.allMonthsData
+    };
+  }
+
+  importUserData(data) {
+    if (!data || typeof data !== 'object') throw new Error('Invalid JSON data');
+    if (Array.isArray(data.habits)) this.habits = data.habits;
+    if (data.allMonthsData && typeof data.allMonthsData === 'object') this.allMonthsData = data.allMonthsData;
+    if (data.currentYear) this.currentYear = data.currentYear;
+    if (data.currentMonth) this.currentMonth = data.currentMonth;
+    if (data.theme) {
+      this.theme = data.theme;
+      document.documentElement.setAttribute('data-theme', this.theme);
+    }
+    this.sanitizeUnscheduledDays();
+    this.autoMarkPastUnloggedHabits();
+    this.saveToStorage();
+    this.notify();
+    triggerConfetti('epic');
+    showToast('Imported bullet journal data successfully!', '📥');
   }
 
   loadSampleAugust2026() {
