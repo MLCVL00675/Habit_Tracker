@@ -572,22 +572,23 @@ function attachAuthModalListeners() {
 
   // REMOVE SAVED USER
   modal.querySelectorAll('.remove-user-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const userId = btn.getAttribute('data-user-id');
       const userName = btn.getAttribute('data-user-name');
 
-      showConfirmDialog({
+      const confirmed = await showConfirmDialog({
         title: 'Remove Account from Browser',
         message: `Are you sure you want to remove <strong>"${userName}"</strong> from this browser? Your logs and data on this device will be erased.`,
         badge: 'Account Deletion',
         variant: 'danger',
-        confirmText: 'Yes, Remove Account',
-        onConfirm: () => {
-          authManager.deleteAccount(userId);
-          renderAuthModal();
-          showToast(`Account removed`, '🗑️');
-        }
+        confirmText: 'Yes, Remove Account'
       });
+
+      if (confirmed) {
+        authManager.deleteAccount(userId);
+        renderAuthModal();
+        showToast(`Account removed`, '🗑️');
+      }
     });
   });
 }
@@ -763,25 +764,26 @@ function attachProfileDrawerListeners() {
 
   const signoutBtn = document.getElementById('drawer-signout-btn');
   if (signoutBtn) {
-    signoutBtn.addEventListener('click', () => {
+    signoutBtn.addEventListener('click', async () => {
       closeProfileDrawer();
       const activeUser = authManager.getActiveUser();
       const isGuest = !activeUser || activeUser.isGuest;
 
-      showConfirmDialog({
+      const confirmed = await showConfirmDialog({
         title: isGuest ? 'Leave Guest Session?' : 'Sign Out of ChronoLog',
         message: isGuest 
           ? 'Are you sure you want to end your guest session? Any unexported guest data may be cleared.'
           : 'Are you sure you want to sign out? Your habit data is safely saved in your account.',
         badge: 'Session',
         variant: 'info',
-        confirmText: isGuest ? 'End Guest Session' : 'Sign Out',
-        onConfirm: () => {
-          authManager.logout();
-          showAuthModal('signin');
-          showToast('Signed out successfully', '👋');
-        }
+        confirmText: isGuest ? 'End Guest Session' : 'Sign Out'
       });
+
+      if (confirmed) {
+        authManager.logout();
+        showAuthModal('signin');
+        showToast('Signed out successfully', '👋');
+      }
     });
   }
 }
