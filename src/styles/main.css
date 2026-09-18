@@ -699,7 +699,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-surface-elevated);
   gap: 12px;
