@@ -220,7 +220,9 @@ body::before {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 button, input, select, textarea {
@@ -651,21 +653,25 @@ button {
 /* Tab panes */
 .main-content-area {
   flex: 1;
-  padding: 14px 20px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .tab-pane {
   display: none;
   animation: fadeIn 0.25s ease forwards;
   flex: 1;
+  min-height: 0;
 }
 
 .tab-pane.active {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
 @keyframes fadeIn {
@@ -681,6 +687,8 @@ button {
   flex-direction: column;
   width: 100%;
   flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .grid-table-container {
@@ -688,11 +696,12 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  overflow: visible;
+  overflow: hidden;
   min-width: 0;
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
 .table-top-bar {
@@ -775,6 +784,9 @@ button {
 .matrix-table-wrapper {
   width: 100%;
   overflow-x: auto;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
   position: relative;
 }
 
@@ -786,15 +798,18 @@ button {
   white-space: nowrap;
 }
 
-/* Sticky Header Group & Columns - Pinned to viewport top: 65px below .app-header */
+/* Sticky Header Group & Columns - Pinned at top: 0 inside scroll container */
 .habit-matrix-table thead {
-  background: var(--bg-surface-elevated);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background-color: var(--bg-surface-elevated);
 }
 
 .header-group-row th {
   position: sticky;
-  top: 65px;
-  z-index: 900;
+  top: 0;
+  z-index: 30;
   padding: 7px 8px;
   font-size: 0.72rem;
   font-weight: 800;
@@ -802,33 +817,33 @@ button {
   text-align: center;
   border-bottom: 1px solid var(--border-subtle);
   border-right: 1px solid var(--border-subtle);
-  background: var(--bg-surface-elevated);
+  background-color: var(--bg-surface-elevated);
 }
 
 .th-group-date {
   position: sticky;
   left: 0;
-  top: 65px;
-  z-index: 950;
-  background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)), var(--bg-surface-elevated);
+  top: 0;
+  z-index: 40;
+  background-color: var(--bg-surface-elevated);
   color: var(--text-secondary);
 }
-.th-group-metrics { background: linear-gradient(rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.15)), var(--bg-surface-elevated); color: var(--accent-cyan); }
-.th-group-habits { background: linear-gradient(rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.12)), var(--bg-surface-elevated); color: var(--accent-emerald); }
-.th-group-progress { background: linear-gradient(rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.12)), var(--bg-surface-elevated); color: var(--accent-gold); }
-.th-group-goals { background: linear-gradient(rgba(139, 92, 246, 0.12), rgba(139, 92, 246, 0.12)), var(--bg-surface-elevated); color: var(--accent-purple); }
+.th-group-metrics { background-color: var(--bg-surface-elevated); color: var(--accent-cyan); }
+.th-group-habits { background-color: var(--bg-surface-elevated); color: var(--accent-emerald); }
+.th-group-progress { background-color: var(--bg-surface-elevated); color: var(--accent-gold); }
+.th-group-goals { background-color: var(--bg-surface-elevated); color: var(--accent-purple); }
 
 .header-columns-row th {
   position: sticky;
-  top: 94px;
-  z-index: 900;
+  top: 29px;
+  z-index: 30;
   padding: 10px 4px;
   height: 98px;
   font-weight: 600;
   text-align: center;
   border-bottom: 2px solid var(--border-medium);
   border-right: 1px solid var(--border-subtle);
-  background: var(--bg-surface-elevated);
+  background-color: var(--bg-surface-elevated);
   vertical-align: middle;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
@@ -836,17 +851,17 @@ button {
 .header-columns-row .sticky-col-1 {
   position: sticky;
   left: 0;
-  top: 94px;
-  z-index: 950;
-  background: var(--bg-surface-elevated);
+  top: 29px;
+  z-index: 40;
+  background-color: var(--bg-surface-elevated);
 }
 
 .header-columns-row .sticky-col-2 {
   position: sticky;
   left: 42px;
-  top: 94px;
-  z-index: 950;
-  background: var(--bg-surface-elevated);
+  top: 29px;
+  z-index: 40;
+  background-color: var(--bg-surface-elevated);
 }
 
 .th-content {
