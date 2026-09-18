@@ -234,9 +234,9 @@ export function renderMatrixTable() {
 
     rowsHtml += `
       <tr class="${rowClasses}" data-day="${day}">
-        <td class="sticky-col-1 col-date">${String(day).padStart(2, '0')}</td>
-        <td class="sticky-col-2 col-weekday" title="${WEEKDAYS_FULL[dayOfWeekIdx]}${isToday ? ' (Today)' : ''}">
-          ${isToday ? '<span class="today-tag-pill">TODAY</span>' : ''}${dayOfWeekStr}
+        <td class="sticky-col-1 col-date ${isToday ? 'col-date-today' : ''}">${String(day).padStart(2, '0')}</td>
+        <td class="sticky-col-2 col-weekday ${isToday ? 'col-weekday-today' : ''}" title="${WEEKDAYS_FULL[dayOfWeekIdx]}${isToday ? ' (Today)' : ''}">
+          ${dayOfWeekStr}
         </td>
         
         <!-- Daily Metrics & Calories -->
@@ -320,8 +320,7 @@ export function renderMatrixTable() {
 
   tfoot.innerHTML = `
     <tr>
-      <td class="sticky-col-1 tfoot-label-cell" title="Monthly Targets & Statistics">TARGETS</td>
-      <td class="sticky-col-2 tfoot-label-cell" title="Monthly Targets & Statistics">& STATS</td>
+      <td colspan="2" class="sticky-col-1-2 tfoot-label-cell" title="Monthly Targets & Statistics">TARGETS & STATS</td>
       <td class="metric-summary-val" title="Average Wake Time">${avgWakeStr}</td>
       <td class="metric-summary-val" title="Average Sleep Duration (Total: ${formatMinutesToDuration(totalSleepMins)})">
         ${formatMinutesToDuration(avgSleepMins) || '--'}
