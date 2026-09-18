@@ -197,6 +197,39 @@ export function getDayOfWeek(year, month, day) {
   return new Date(year, month - 1, day).getDay();
 }
 
+/**
+ * Checks if a specific day (year, month, day) is strictly before a habit's creation date.
+ * If true, the habit did not exist on that past day and renders as a dash (—).
+ */
+export function isDayBeforeHabitCreated(habit, year, month, day) {
+  if (!habit || !habit.createdAt) return false;
+  
+  const createdDate = new Date(habit.createdAt);
+  if (isNaN(createdDate.getTime())) return false;
+
+  const createdYear = createdDate.getFullYear();
+  const createdMonth = createdDate.getMonth() + 1; // 1-indexed
+  const createdDay = createdDate.getDate();
+
+  if (year < createdYear) return true;
+  if (year > createdYear) return false;
+
+  if (month < createdMonth) return true;
+  if (month > createdMonth) return false;
+
+  return day < createdDay;
+}
+
+/**
+ * Formats ISO date string into readable short date (e.g. "Sep 18, 2026")
+ */
+export function formatCreatedDate(isoStr) {
+  if (!isoStr) return '';
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 // Calculate streaks for habits across all days (supporting Daily, Specific Days, and Weekly Targets)
 export function calculateHabitStreaks(monthData, habitOrId, totalDays, isHabitScheduledFn = null, year = 2026, month = 9) {
   const habitId = typeof habitOrId === 'object' && habitOrId !== null ? habitOrId.id : habitOrId;

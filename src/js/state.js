@@ -2,7 +2,7 @@
    CHRONOLOG // CENTRAL STATE & PERSISTENCE ENGINE
    ========================================================================== */
 
-import { MONTH_NAMES, getDaysInMonth, getDayOfWeek, parseDurationToMinutes, sound, showToast, triggerConfetti } from './utils.js';
+import { MONTH_NAMES, getDaysInMonth, getDayOfWeek, parseDurationToMinutes, isDayBeforeHabitCreated, sound, showToast, triggerConfetti } from './utils.js';
 import { authManager } from './auth.js';
 import { db } from './db.js';
 
@@ -303,6 +303,7 @@ class AppState {
 
   addHabit(habitData) {
     const id = habitData.id || `habit_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+    const now = new Date();
     const newHabit = {
       id,
       name: habitData.name.trim(),
@@ -310,7 +311,8 @@ class AppState {
       category: habitData.category || 'General',
       frequencyType: habitData.frequencyType || 'daily', // 'daily' | 'weekly_target' | 'specific_days'
       weeklyTarget: parseInt(habitData.weeklyTarget, 10) || 7,
-      specificDays: Array.isArray(habitData.specificDays) ? habitData.specificDays : []
+      specificDays: Array.isArray(habitData.specificDays) ? habitData.specificDays : [],
+      createdAt: habitData.createdAt || now.toISOString()
     };
 
     this.habits.push(newHabit);
@@ -356,7 +358,7 @@ class AppState {
   }
 
   // Auto-mark scheduled unlogged habits from yesterday and earlier past days as 'missed'
-  // Unscheduled rest days are preserved as 'none' (violet dash —) and can never be 'missed'
+  // Unscheduled rest days and days before habit creation are preserved as 'none' (violet dash —) and can never be 'missed'
   autoMarkPastUnloggedHabits() {
     const now = new Date();
     const realYear = now.getFullYear();
@@ -390,10 +392,16 @@ class AppState {
         if (!dayRecord.habits) dayRecord.habits = {};
 
         this.habits.forEach(h => {
+          const isBeforeCreated = isDayBeforeHabitCreated(h, year, month, d);
           const isScheduled = this.isHabitScheduledForDay(h, year, month, d);
           const currentStatus = dayRecord.habits[h.id];
 
-          if (h.frequencyType === 'daily') {
+          if (isBeforeCreated) {
+            // Day BEFORE habit creation: strictly 'none' (violet dash —) unless checked as 'done'
+            if (currentStatus !== 'done') {
+              dayRecord.habits[h.id] = 'none';
+            }
+          } else if (h.frequencyType === 'daily') {
             // Strict daily habit on past day: unlogged is missed ('missed')
             if (!currentStatus || currentStatus === 'none') {
               dayRecord.habits[h.id] = 'missed';
@@ -423,25 +431,23 @@ class AppState {
 
   sanitizeUnscheduledDays() {
     this.habits.forEach(h => {
-      if (h.frequencyType === 'specific_days') {
-        Object.entries(this.allMonthsData).forEach(([key, m]) => {
-          if (m && m.days) {
-            const [yStr, mStr] = key.split('-').map(Number);
-            const y = yStr || this.currentYear;
-            const mNum = mStr || this.currentMonth;
-            Object.entries(m.days).forEach(([dayStr, dayObj]) => {
-              const d = parseInt(dayStr, 10);
-              const isScheduled = this.isHabitScheduledForDay(h, y, mNum, d);
-              if (!isScheduled && dayObj.habits) {
-                // If it's an unscheduled rest day, it can only be 'done' (if user explicitly checked it) or 'none'
-                if (dayObj.habits[h.id] !== 'done') {
-                  dayObj.habits[h.id] = 'none';
-                }
+      Object.entries(this.allMonthsData).forEach(([key, m]) => {
+        if (m && m.days) {
+          const [yStr, mStr] = key.split('-').map(Number);
+          const y = yStr || this.currentYear;
+          const mNum = mStr || this.currentMonth;
+          Object.entries(m.days).forEach(([dayStr, dayObj]) => {
+            const d = parseInt(dayStr, 10);
+            const isScheduled = this.isHabitScheduledForDay(h, y, mNum, d);
+            if (!isScheduled && dayObj.habits) {
+              // If it's an unscheduled rest day or day before creation, it can only be 'done' (if user explicitly checked it) or 'none'
+              if (dayObj.habits[h.id] !== 'done') {
+                dayObj.habits[h.id] = 'none';
               }
-            });
-          }
-        });
-      }
+            }
+          });
+        }
+      });
     });
   }
 
@@ -477,6 +483,7 @@ class AppState {
   // Check if habit is scheduled for a specific day
   isHabitScheduledForDay(habit, year, month, day) {
     if (!habit) return false;
+    if (isDayBeforeHabitCreated(habit, year, month, day)) return false;
     if (habit.frequencyType === 'daily') return true;
     if (habit.frequencyType === 'weekly_target') return true; // Flexible daily completion toward target
     if (habit.frequencyType === 'specific_days') {
@@ -491,27 +498,13 @@ class AppState {
     const totalDays = getDaysInMonth(year, month);
     if (!habit) return totalDays;
 
-    if (habit.frequencyType === 'daily') {
-      return totalDays;
-    }
-
-    if (habit.frequencyType === 'weekly_target') {
-      const target = habit.weeklyTarget || 7;
-      return Math.min(totalDays, Math.round(target * (totalDays / 7)));
-    }
-
-    if (habit.frequencyType === 'specific_days') {
-      const daysArray = habit.specificDays || [];
-      if (daysArray.length === 0) return 0;
-      let count = 0;
-      for (let d = 1; d <= totalDays; d++) {
-        const dow = getDayOfWeek(year, month, d);
-        if (daysArray.includes(dow)) count++;
+    let targetCount = 0;
+    for (let d = 1; d <= totalDays; d++) {
+      if (this.isHabitScheduledForDay(habit, year, month, d)) {
+        targetCount++;
       }
-      return count;
     }
-
-    return totalDays;
+    return targetCount;
   }
 
   // Readable schedule summary for badges & chips

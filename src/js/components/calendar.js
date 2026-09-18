@@ -11,7 +11,8 @@ import {
   parseDurationToMinutes,
   formatMinutesToDuration,
   normalizeTimeString,
-  normalizeCalorieString
+  normalizeCalorieString,
+  isDayBeforeHabitCreated
 } from '../utils.js';
 
 export function renderCalendarView() {
@@ -192,10 +193,11 @@ export function openDayDetailModal(day) {
 
   const habitsModalGrid = habits.map(h => {
     const isScheduled = state.isHabitScheduledForDay(h, state.currentYear, state.currentMonth, day);
+    const isBeforeCreated = isDayBeforeHabitCreated(h, state.currentYear, state.currentMonth, day);
     const current = localHabits[h.id] || 'none';
     const scheduleBadge = state.getHabitScheduleLabel(h);
 
-    const isRest = !isScheduled && h.frequencyType === 'specific_days' && (current === 'none' || current === 'rest');
+    const isRest = isBeforeCreated || (!isScheduled && h.frequencyType === 'specific_days' && (current === 'none' || current === 'rest'));
     let badgeText = '· Blank';
     let badgeClass = 'state-blank';
     if (current === 'done') {
@@ -205,7 +207,7 @@ export function openDayDetailModal(day) {
       badgeText = '✗ Missed';
       badgeClass = 'state-missed';
     } else if (isRest) {
-      badgeText = '— Rest Day';
+      badgeText = isBeforeCreated ? '— Not Active Yet' : '— Rest Day';
       badgeClass = 'state-rest';
     }
 
@@ -214,7 +216,7 @@ export function openDayDetailModal(day) {
         <span class="modal-habit-icon">${h.icon}</span>
         <div class="modal-habit-text">
           <span class="modal-habit-name">${escapeHtml(h.name)}</span>
-          <span class="modal-habit-sub">${scheduleBadge}${!isScheduled ? ' (Off Day)' : ''}</span>
+          <span class="modal-habit-sub">${scheduleBadge}${isBeforeCreated ? ' (Not Active Yet)' : (!isScheduled ? ' (Off Day)' : '')}</span>
         </div>
         <span class="modal-habit-state-badge ${badgeClass}">${badgeText}</span>
       </div>

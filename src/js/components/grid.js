@@ -9,7 +9,9 @@ import {
   normalizeTimeString,
   parseCalorieToNumber,
   normalizeCalorieString,
-  calculateHabitStreaks
+  calculateHabitStreaks,
+  isDayBeforeHabitCreated,
+  formatCreatedDate
 } from '../utils.js';
 
 export function renderMatrixTable() {
@@ -187,13 +189,14 @@ export function renderMatrixTable() {
     // Generate Habits Cells
     const habitCellsHtml = habits.map(h => {
       const isScheduled = state.isHabitScheduledForDay(h, state.currentYear, state.currentMonth, day);
+      const isBeforeCreated = isDayBeforeHabitCreated(h, state.currentYear, state.currentMonth, day);
       const rawState = (dayRecord.habits && dayRecord.habits[h.id]) || 'none';
       
       let stateVal = rawState;
       let symbol = '·';
       let isRestDay = false;
 
-      if (!isScheduled && h.frequencyType === 'specific_days') {
+      if (isBeforeCreated || (!isScheduled && h.frequencyType === 'specific_days')) {
         if (rawState === 'none' || rawState === 'rest') {
           isRestDay = true;
           stateVal = 'rest';
@@ -212,9 +215,11 @@ export function renderMatrixTable() {
       const restClass = isRestDay ? 'habit-rest-day' : '';
       const badgeRestClass = isRestDay ? 'badge-rest-dash' : '';
 
-      const tooltipText = isRestDay
-        ? `${h.name} (Day ${day} - ${WEEKDAYS_FULL[dayOfWeekIdx]}): Rest Day (Not scheduled on ${dayOfWeekStr})`
-        : `${h.name} (Day ${day} - ${WEEKDAYS_FULL[dayOfWeekIdx]}): ${stateVal === 'done' ? 'Completed' : (stateVal === 'missed' ? 'Missed' : 'Blank')}`;
+      const tooltipText = isBeforeCreated
+        ? `${h.name} (Day ${day} - ${WEEKDAYS_FULL[dayOfWeekIdx]}): Not active yet (Created on ${formatCreatedDate(h.createdAt)})`
+        : (isRestDay
+            ? `${h.name} (Day ${day} - ${WEEKDAYS_FULL[dayOfWeekIdx]}): Rest Day (Not scheduled on ${dayOfWeekStr})`
+            : `${h.name} (Day ${day} - ${WEEKDAYS_FULL[dayOfWeekIdx]}): ${stateVal === 'done' ? 'Completed' : (stateVal === 'missed' ? 'Missed' : 'Blank')}`);
 
       return `
         <td class="habit-toggle-cell ${restClass}" 
