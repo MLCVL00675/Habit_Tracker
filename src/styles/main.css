@@ -220,9 +220,9 @@ body::before {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  height: auto;
+  overflow: visible;
 }
 
 button, input, select, textarea {
@@ -241,9 +241,8 @@ button {
    APP HEADER
    -------------------------------------------------------------------------- */
 .app-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: relative;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -657,7 +656,7 @@ button {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .tab-pane {
@@ -672,6 +671,7 @@ button {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow: visible;
 }
 
 @keyframes fadeIn {
@@ -688,7 +688,7 @@ button {
   width: 100%;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .grid-table-container {
@@ -696,7 +696,7 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  overflow: hidden;
+  overflow: visible;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -784,7 +784,7 @@ button {
 .matrix-table-wrapper {
   width: 100%;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: visible;
   flex: 1;
   min-height: 0;
   position: relative;
@@ -798,7 +798,7 @@ button {
   white-space: nowrap;
 }
 
-/* Sticky Header Group & Columns - Pinned at top: 0 inside scroll container */
+/* Sticky Header Group & Columns - Pinned at top: 0 on viewport scroll */
 .habit-matrix-table thead {
   position: sticky;
   top: 0;
@@ -810,7 +810,8 @@ button {
   position: sticky;
   top: 0;
   z-index: 30;
-  padding: 7px 8px;
+  height: 29px;
+  padding: 5px 8px;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -818,6 +819,7 @@ button {
   border-bottom: 1px solid var(--border-subtle);
   border-right: 1px solid var(--border-subtle);
   background-color: var(--bg-surface-elevated);
+  box-sizing: border-box;
 }
 
 .th-group-date {
