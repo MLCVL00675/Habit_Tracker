@@ -220,7 +220,9 @@ body::before {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 button, input, select, textarea {
@@ -649,24 +651,28 @@ button {
 }
 
 /* Tab panes */
+/* Tab panes */
 .main-content-area {
   flex: 1;
-  padding: 14px 20px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 110px);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .tab-pane {
   display: none;
   animation: fadeIn 0.25s ease forwards;
   flex: 1;
+  min-height: 0;
 }
 
 .tab-pane.active {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
 @keyframes fadeIn {
@@ -682,7 +688,8 @@ button {
   flex-direction: column;
   width: 100%;
   flex: 1;
-  min-height: calc(100vh - 140px);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .grid-table-container {
@@ -690,18 +697,19 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  overflow: visible;
+  overflow: hidden;
   min-width: 0;
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
 .table-top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-surface-elevated);
   gap: 12px;
@@ -777,7 +785,7 @@ button {
 .matrix-table-wrapper {
   width: 100%;
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
   flex: 1;
   min-height: 0;
   position: relative;
@@ -791,18 +799,18 @@ button {
   white-space: nowrap;
 }
 
-/* Sticky Header Group & Columns - Pinned below sticky .app-header (top: 65px) */
+/* Sticky Header Group & Columns - Pinned at top: 0 inside table scroll container */
 .habit-matrix-table thead {
   position: sticky;
-  top: 65px;
-  z-index: 80;
+  top: 0;
+  z-index: 30;
   background: var(--bg-surface-elevated);
 }
 
 .header-group-row th {
   position: sticky;
-  top: 65px;
-  z-index: 80;
+  top: 0;
+  z-index: 30;
   padding: 8px 8px;
   font-size: 0.72rem;
   font-weight: 800;
@@ -816,8 +824,8 @@ button {
 .th-group-date {
   position: sticky;
   left: 0;
-  top: 65px;
-  z-index: 95;
+  top: 0;
+  z-index: 40;
   background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)), var(--bg-surface-elevated);
   color: var(--text-secondary);
 }
@@ -828,8 +836,8 @@ button {
 
 .header-columns-row th {
   position: sticky;
-  top: 96px;
-  z-index: 80;
+  top: 31px;
+  z-index: 30;
   padding: 10px 4px;
   height: 98px;
   font-weight: 600;
@@ -838,21 +846,21 @@ button {
   border-right: 1px solid var(--border-subtle);
   background: var(--bg-surface-elevated);
   vertical-align: middle;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .header-columns-row .sticky-col-1 {
   position: sticky;
   left: 0;
-  top: 96px;
-  z-index: 95;
+  top: 31px;
+  z-index: 40;
 }
 
 .header-columns-row .sticky-col-2 {
   position: sticky;
   left: 42px;
-  top: 96px;
-  z-index: 95;
+  top: 31px;
+  z-index: 40;
 }
 
 .th-content {
