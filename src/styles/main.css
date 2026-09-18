@@ -193,7 +193,7 @@ html, body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Bullet Journal Dot Grid Background Texture */
@@ -690,13 +690,11 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  overflow: hidden;
+  overflow: visible;
   min-width: 0;
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: 100%;
-  min-height: calc(100vh - 140px);
 }
 
 .table-top-bar {
@@ -709,6 +707,7 @@ button {
   gap: 12px;
   flex-wrap: wrap;
   flex-shrink: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .section-title {
@@ -778,10 +777,9 @@ button {
 .matrix-table-wrapper {
   width: 100%;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: visible;
   flex: 1;
   min-height: 0;
-  max-height: calc(100vh - 200px);
   position: relative;
 }
 
@@ -793,18 +791,18 @@ button {
   white-space: nowrap;
 }
 
-/* Sticky Header Group & Columns */
+/* Sticky Header Group & Columns - Pinned below sticky .app-header (top: 65px) */
 .habit-matrix-table thead {
   position: sticky;
-  top: 0;
-  z-index: 30;
+  top: 65px;
+  z-index: 80;
   background: var(--bg-surface-elevated);
 }
 
 .header-group-row th {
   position: sticky;
-  top: 0;
-  z-index: 30;
+  top: 65px;
+  z-index: 80;
   padding: 8px 8px;
   font-size: 0.72rem;
   font-weight: 800;
@@ -818,8 +816,8 @@ button {
 .th-group-date {
   position: sticky;
   left: 0;
-  top: 0;
-  z-index: 40;
+  top: 65px;
+  z-index: 95;
   background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)), var(--bg-surface-elevated);
   color: var(--text-secondary);
 }
@@ -830,8 +828,8 @@ button {
 
 .header-columns-row th {
   position: sticky;
-  top: 31px;
-  z-index: 30;
+  top: 96px;
+  z-index: 80;
   padding: 10px 4px;
   height: 98px;
   font-weight: 600;
@@ -840,21 +838,21 @@ button {
   border-right: 1px solid var(--border-subtle);
   background: var(--bg-surface-elevated);
   vertical-align: middle;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
 }
 
 .header-columns-row .sticky-col-1 {
   position: sticky;
   left: 0;
-  top: 31px;
-  z-index: 40;
+  top: 96px;
+  z-index: 95;
 }
 
 .header-columns-row .sticky-col-2 {
   position: sticky;
   left: 42px;
-  top: 31px;
-  z-index: 40;
+  top: 96px;
+  z-index: 95;
 }
 
 .th-content {
