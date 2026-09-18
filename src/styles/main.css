@@ -220,9 +220,9 @@ body::before {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  height: auto;
-  overflow: visible;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 button, input, select, textarea {
@@ -656,7 +656,7 @@ button {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .tab-pane {
@@ -671,7 +671,7 @@ button {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -688,7 +688,7 @@ button {
   width: 100%;
   flex: 1;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .grid-table-container {
@@ -696,7 +696,7 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  overflow: visible;
+  overflow: hidden;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -783,8 +783,8 @@ button {
    -------------------------------------------------------------------------- */
 .matrix-table-wrapper {
   width: 100%;
-  overflow-x: auto;
-  overflow-y: visible;
+  max-height: calc(100vh - 180px);
+  overflow: auto;
   flex: 1;
   min-height: 0;
   position: relative;
@@ -798,18 +798,18 @@ button {
   white-space: nowrap;
 }
 
-/* Sticky Header Group & Columns - Pinned at top: 0 on viewport scroll */
+/* Sticky Header Group & Columns - Pinned at top: 0 inside scroll container */
 .habit-matrix-table thead {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 40;
   background-color: var(--bg-surface-elevated);
 }
 
 .header-group-row th {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 40;
   height: 29px;
   padding: 5px 8px;
   font-size: 0.72rem;
@@ -826,7 +826,7 @@ button {
   position: sticky;
   left: 0;
   top: 0;
-  z-index: 40;
+  z-index: 50;
   background-color: var(--bg-surface-elevated);
   color: var(--text-secondary);
 }
@@ -838,7 +838,7 @@ button {
 .header-columns-row th {
   position: sticky;
   top: 29px;
-  z-index: 30;
+  z-index: 40;
   padding: 10px 4px;
   height: 98px;
   font-weight: 600;
@@ -854,7 +854,7 @@ button {
   position: sticky;
   left: 0;
   top: 29px;
-  z-index: 40;
+  z-index: 50;
   background-color: var(--bg-surface-elevated);
 }
 
@@ -862,7 +862,7 @@ button {
   position: sticky;
   left: 42px;
   top: 29px;
-  z-index: 40;
+  z-index: 50;
   background-color: var(--bg-surface-elevated);
 }
 
