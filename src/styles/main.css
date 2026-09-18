@@ -220,9 +220,9 @@ body::before {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  height: auto;
-  overflow: visible;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 button, input, select, textarea {
@@ -656,7 +656,7 @@ button {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .tab-pane {
@@ -671,7 +671,7 @@ button {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -688,7 +688,7 @@ button {
   width: 100%;
   flex: 1;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .grid-table-container {
@@ -696,7 +696,7 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  overflow: visible;
+  overflow: hidden;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -783,32 +783,29 @@ button {
    -------------------------------------------------------------------------- */
 .matrix-table-wrapper {
   width: 100%;
-  overflow-x: auto;
-  overflow-y: visible;
+  height: calc(100vh - 180px);
+  max-height: 85vh;
+  overflow: auto;
   position: relative;
+  flex: 1;
+  min-height: 0;
 }
 
 .habit-matrix-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
   font-size: 0.82rem;
   white-space: nowrap;
 }
 
-/* Sticky Header Group & Columns - Pinned at top: 0 on viewport window scroll */
-.habit-matrix-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background-color: var(--bg-surface-elevated);
-}
-
+/* Sticky Header Group & Columns - Pinned inside table scroll container */
 .header-group-row th {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  height: 29px;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  height: 32px;
   padding: 5px 8px;
   font-size: 0.72rem;
   font-weight: 800;
@@ -816,52 +813,52 @@ button {
   text-align: center;
   border-bottom: 1px solid var(--border-subtle);
   border-right: 1px solid var(--border-subtle);
-  background-color: var(--bg-surface-elevated);
+  background-color: #0b111e !important;
   box-sizing: border-box;
 }
 
 .th-group-date {
-  position: sticky;
-  left: 0;
-  top: 0;
-  z-index: 50;
-  background-color: var(--bg-surface-elevated);
+  position: sticky !important;
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 40 !important;
+  background-color: #0b111e !important;
   color: var(--text-secondary);
 }
-.th-group-metrics { background-color: var(--bg-surface-elevated); color: var(--accent-cyan); }
-.th-group-habits { background-color: var(--bg-surface-elevated); color: var(--accent-emerald); }
-.th-group-progress { background-color: var(--bg-surface-elevated); color: var(--accent-gold); }
-.th-group-goals { background-color: var(--bg-surface-elevated); color: var(--accent-purple); }
+.th-group-metrics { background-color: #0b111e !important; color: var(--accent-cyan); }
+.th-group-habits { background-color: #0b111e !important; color: var(--accent-emerald); }
+.th-group-progress { background-color: #0b111e !important; color: var(--accent-gold); }
+.th-group-goals { background-color: #0b111e !important; color: var(--accent-purple); }
 
 .header-columns-row th {
-  position: sticky;
-  top: 29px;
-  z-index: 39;
+  position: sticky !important;
+  top: 32px !important;
+  z-index: 29 !important;
   padding: 10px 4px;
   height: 98px;
   font-weight: 600;
   text-align: center;
   border-bottom: 2px solid var(--border-medium);
   border-right: 1px solid var(--border-subtle);
-  background-color: var(--bg-surface-elevated);
+  background-color: #0b111e !important;
   vertical-align: middle;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .header-columns-row .sticky-col-1 {
-  position: sticky;
-  left: 0;
-  top: 29px;
-  z-index: 50;
-  background-color: var(--bg-surface-elevated);
+  position: sticky !important;
+  left: 0 !important;
+  top: 32px !important;
+  z-index: 40 !important;
+  background-color: #0b111e !important;
 }
 
 .header-columns-row .sticky-col-2 {
-  position: sticky;
-  left: 42px;
-  top: 29px;
-  z-index: 50;
-  background-color: var(--bg-surface-elevated);
+  position: sticky !important;
+  left: 42px !important;
+  top: 32px !important;
+  z-index: 40 !important;
+  background-color: #0b111e !important;
 }
 
 .th-content {
@@ -947,28 +944,37 @@ button {
 
 /* Sticky First 2 Columns: Day & Weekday */
 .sticky-col-1 {
-  position: sticky;
-  left: 0;
-  z-index: 10;
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 35 !important;
   width: 42px;
   min-width: 42px;
   max-width: 42px;
-  background: var(--bg-surface-elevated);
+  background-color: #0b111e !important;
 }
 
 .sticky-col-2 {
-  position: sticky;
-  left: 42px;
-  z-index: 10;
+  position: sticky !important;
+  left: 42px !important;
+  z-index: 35 !important;
   width: 50px;
   min-width: 50px;
   max-width: 50px;
-  background: var(--bg-surface-elevated);
+  background-color: #0b111e !important;
   border-right: 2px solid var(--border-medium) !important;
 }
 
 tbody .sticky-col-1 {
-  background: var(--bg-surface);
+  background-color: #0f172a !important;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.88rem;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+tbody .sticky-col-2 {
   color: var(--accent-cyan);
   font-family: var(--font-mono);
   font-weight: 800;
