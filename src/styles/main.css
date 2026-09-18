@@ -781,6 +781,7 @@ button {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
+  max-height: calc(100vh - 200px);
   position: relative;
 }
 
@@ -796,11 +797,14 @@ button {
 .habit-matrix-table thead {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 30;
   background: var(--bg-surface-elevated);
 }
 
 .header-group-row th {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   padding: 8px 8px;
   font-size: 0.72rem;
   font-weight: 800;
@@ -808,15 +812,26 @@ button {
   text-align: center;
   border-bottom: 1px solid var(--border-subtle);
   border-right: 1px solid var(--border-subtle);
+  background: var(--bg-surface-elevated);
 }
 
-.th-group-date { background: rgba(255, 255, 255, 0.04); color: var(--text-secondary); }
-.th-group-metrics { background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); }
-.th-group-habits { background: rgba(16, 185, 129, 0.08); color: var(--accent-emerald); }
-.th-group-progress { background: rgba(245, 158, 11, 0.08); color: var(--accent-gold); }
-.th-group-goals { background: rgba(139, 92, 246, 0.08); color: var(--accent-purple); }
+.th-group-date {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)), var(--bg-surface-elevated);
+  color: var(--text-secondary);
+}
+.th-group-metrics { background: linear-gradient(rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.15)), var(--bg-surface-elevated); color: var(--accent-cyan); }
+.th-group-habits { background: linear-gradient(rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.12)), var(--bg-surface-elevated); color: var(--accent-emerald); }
+.th-group-progress { background: linear-gradient(rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.12)), var(--bg-surface-elevated); color: var(--accent-gold); }
+.th-group-goals { background: linear-gradient(rgba(139, 92, 246, 0.12), rgba(139, 92, 246, 0.12)), var(--bg-surface-elevated); color: var(--accent-purple); }
 
 .header-columns-row th {
+  position: sticky;
+  top: 31px;
+  z-index: 30;
   padding: 10px 4px;
   height: 98px;
   font-weight: 600;
@@ -825,6 +840,21 @@ button {
   border-right: 1px solid var(--border-subtle);
   background: var(--bg-surface-elevated);
   vertical-align: middle;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.header-columns-row .sticky-col-1 {
+  position: sticky;
+  left: 0;
+  top: 31px;
+  z-index: 40;
+}
+
+.header-columns-row .sticky-col-2 {
+  position: sticky;
+  left: 42px;
+  top: 31px;
+  z-index: 40;
 }
 
 .th-content {
@@ -1219,11 +1249,16 @@ tbody tr:hover .sticky-col-2 {
 }
 
 .tfoot-label-cell {
+  position: sticky;
+  left: 0;
+  bottom: 0;
+  z-index: 40;
   font-family: var(--font-display);
   letter-spacing: 0.05em;
   color: var(--accent-cyan);
   text-align: right !important;
   padding-right: 12px !important;
+  background: var(--bg-surface-elevated);
 }
 
 .metric-summary-val {
