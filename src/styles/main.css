@@ -803,7 +803,7 @@ button {
   text-align: center;
   border-bottom: 1px solid var(--border-subtle);
   border-right: 1px solid var(--border-subtle);
-  background-color: #0b111e !important;
+  background-color: #0d131f !important;
   box-sizing: border-box;
 }
 
@@ -812,25 +812,25 @@ button {
   left: 0 !important;
   top: 0 !important;
   z-index: 50 !important;
-  background-color: #0b111e !important;
+  background-color: #0d131f !important;
   color: var(--text-secondary);
 }
-.th-group-metrics { background-color: #0b111e !important; color: var(--accent-cyan); }
-.th-group-habits { background-color: #0b111e !important; color: var(--accent-emerald); }
-.th-group-progress { background-color: #0b111e !important; color: var(--accent-gold); }
-.th-group-goals { background-color: #0b111e !important; color: var(--accent-purple); }
+.th-group-metrics { background-color: #0d131f !important; color: var(--accent-cyan); }
+.th-group-habits { background-color: #0d131f !important; color: var(--accent-emerald); }
+.th-group-progress { background-color: #0d131f !important; color: var(--accent-gold); }
+.th-group-goals { background-color: #0d131f !important; color: var(--accent-purple); }
 
 .header-columns-row th {
   position: sticky !important;
   top: 32px !important;
-  z-index: 39 !important;
+  z-index: 30 !important;
   padding: 10px 4px;
   height: 98px;
   font-weight: 600;
   text-align: center;
   border-bottom: 2px solid var(--border-medium);
   border-right: 1px solid var(--border-subtle);
-  background-color: #0b111e !important;
+  background-color: #0d131f !important;
   vertical-align: middle;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
@@ -840,7 +840,7 @@ button {
   left: 0 !important;
   top: 32px !important;
   z-index: 50 !important;
-  background-color: #0b111e !important;
+  background-color: #0d131f !important;
 }
 
 .header-columns-row .sticky-col-2 {
@@ -848,7 +848,7 @@ button {
   left: 42px !important;
   top: 32px !important;
   z-index: 50 !important;
-  background-color: #0b111e !important;
+  background-color: #0d131f !important;
 }
 
 .th-content {
