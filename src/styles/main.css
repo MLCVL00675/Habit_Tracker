@@ -799,11 +799,8 @@ button {
   white-space: nowrap;
 }
 
-/* Sticky Header Group & Columns - Pinned at top: 0 inside table scroll container */
+/* Sticky Header Group & Columns - Direct sticky th elements */
 .habit-matrix-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 30;
   background: var(--bg-surface-elevated);
 }
 
@@ -811,7 +808,7 @@ button {
   position: sticky;
   top: 0;
   z-index: 30;
-  padding: 8px 8px;
+  padding: 7px 8px;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -836,7 +833,7 @@ button {
 
 .header-columns-row th {
   position: sticky;
-  top: 31px;
+  top: 29px;
   z-index: 30;
   padding: 10px 4px;
   height: 98px;
@@ -852,15 +849,17 @@ button {
 .header-columns-row .sticky-col-1 {
   position: sticky;
   left: 0;
-  top: 31px;
+  top: 29px;
   z-index: 40;
+  background: var(--bg-surface-elevated);
 }
 
 .header-columns-row .sticky-col-2 {
   position: sticky;
   left: 42px;
-  top: 31px;
+  top: 29px;
   z-index: 40;
+  background: var(--bg-surface-elevated);
 }
 
 .th-content {
