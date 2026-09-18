@@ -193,7 +193,7 @@ html, body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: clip;
+  overflow: visible;
 }
 
 /* Bullet Journal Dot Grid Background Texture */
@@ -800,14 +800,14 @@ button {
 .habit-matrix-table thead {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 40;
   background-color: var(--bg-surface-elevated);
 }
 
 .header-group-row th {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 40;
   height: 29px;
   padding: 5px 8px;
   font-size: 0.72rem;
@@ -824,7 +824,7 @@ button {
   position: sticky;
   left: 0;
   top: 0;
-  z-index: 40;
+  z-index: 50;
   background-color: var(--bg-surface-elevated);
   color: var(--text-secondary);
 }
@@ -836,7 +836,7 @@ button {
 .header-columns-row th {
   position: sticky;
   top: 29px;
-  z-index: 30;
+  z-index: 39;
   padding: 10px 4px;
   height: 98px;
   font-weight: 600;
@@ -852,7 +852,7 @@ button {
   position: sticky;
   left: 0;
   top: 29px;
-  z-index: 40;
+  z-index: 50;
   background-color: var(--bg-surface-elevated);
 }
 
@@ -860,7 +860,7 @@ button {
   position: sticky;
   left: 42px;
   top: 29px;
-  z-index: 40;
+  z-index: 50;
   background-color: var(--bg-surface-elevated);
 }
 
