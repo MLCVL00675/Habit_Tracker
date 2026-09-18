@@ -320,7 +320,7 @@ export function renderMatrixTable() {
 
   tfoot.innerHTML = `
     <tr>
-      <td colspan="2" class="sticky-col-1-2 tfoot-label-cell" title="Monthly Targets & Statistics">TARGETS & STATS</td>
+      <td colspan="2" class="sticky-col-1-2 tfoot-label-cell" title="Monthly Targets & Totals Summary">TOTALS</td>
       <td class="metric-summary-val" title="Average Wake Time">${avgWakeStr}</td>
       <td class="metric-summary-val" title="Average Sleep Duration (Total: ${formatMinutesToDuration(totalSleepMins)})">
         ${formatMinutesToDuration(avgSleepMins) || '--'}
