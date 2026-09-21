@@ -684,6 +684,7 @@ button {
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-width: max-content;
   flex: 1;
   overflow: visible;
 }
@@ -694,7 +695,8 @@ button {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   overflow: visible;
-  min-width: 0;
+  width: 100%;
+  min-width: max-content;
   display: flex;
   flex-direction: column;
 }
@@ -778,7 +780,8 @@ button {
    -------------------------------------------------------------------------- */
 .matrix-table-wrapper {
   width: 100%;
-  overflow-x: auto;
+  min-width: max-content;
+  overflow: visible;
   position: relative;
   background-color: var(--bg-surface);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
