@@ -778,16 +778,20 @@ button {
    -------------------------------------------------------------------------- */
 .matrix-table-wrapper {
   width: 100%;
-  overflow: visible;
+  overflow-x: auto;
   position: relative;
+  background-color: var(--bg-surface);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .habit-matrix-table {
   width: 100%;
+  min-width: max-content;
   border-collapse: separate !important;
   border-spacing: 0 !important;
   font-size: 0.82rem;
   white-space: nowrap;
+  background-color: var(--bg-surface);
 }
 
 /* Sticky Header Group & Columns - Pinned at top: 0 on viewport window scroll */
@@ -990,6 +994,7 @@ tbody tr:hover .sticky-col-2 {
   height: 56px;
   border-bottom: 1px solid var(--border-subtle);
   transition: background var(--transition-fast);
+  background-color: var(--bg-surface);
 }
 
 .habit-matrix-table tbody tr:hover {
@@ -1048,6 +1053,7 @@ tbody tr:hover .sticky-col-2 {
   border-right: 1px solid var(--border-subtle);
   text-align: center;
   vertical-align: middle;
+  background-color: var(--bg-surface);
 }
 
 /* Metric Inputs inside cells */
