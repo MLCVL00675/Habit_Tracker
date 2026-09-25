@@ -4,8 +4,8 @@
 
 import confetti from 'canvas-confetti';
 
-// Format and parse duration strings (e.g. "7 15", "7:30", "715", "7.15", "7.5", "4", "45", "7 hr 30 m", "6h 15m", "7h 15") -> total minutes
-export function parseDurationToMinutes(val) {
+// Format and parse duration strings (e.g. "10m", "45m", "10 min", "0h 45m", "7 15", "7:30", "715", "7.15", "7.5", "4", "45", "7 hr 30 m", "6h 15m", "7h 15") -> total minutes (max 24 hrs = 1440 mins)
+export function parseDurationToMinutes(val, allowOver24h = false) {
   if (val === null || val === undefined) return 0;
   let str = String(val).trim().toLowerCase();
   if (!str) return 0;
@@ -13,81 +13,103 @@ export function parseDurationToMinutes(val) {
   // Replace comma with dot (e.g. "7,5")
   str = str.replace(',', '.');
 
-  // 1. Check format "Xh Ym", "X hr Y min", "Xh 15", "Xh15", "X h Y", "X 15m"
-  const hUnitMatch = str.match(/^(\d+(?:\.\d+)?)\s*(?:hr|hrs|h|hours|hour)\s*(\d{1,2})?\s*(?:min|mins|m|minute|minutes)?$/);
-  if (hUnitMatch) {
+  let totalMins = 0;
+
+  // 1. Minutes only with unit: "10m", "45m", "10min", "45 mins", "15 min", "10 minute", "45 minutes", "10 m", "45 min"
+  const minOnlyMatch = str.match(/^(\d+(?:\.\d+)?)\s*(?:min|mins|m|minute|minutes)$/);
+  if (minOnlyMatch) {
+    const m = parseFloat(minOnlyMatch[1]);
+    if (!isNaN(m)) {
+      totalMins = Math.round(m);
+    }
+  }
+
+  // 2. Colon prefix for minutes only: ":45", ":10", ":05", ":5"
+  else if (/^:(\d{1,2})$/.test(str)) {
+    const colonMinMatch = str.match(/^:(\d{1,2})$/);
+    const m = parseInt(colonMinMatch[1], 10);
+    if (!isNaN(m)) {
+      totalMins = m;
+    }
+  }
+
+  // 3. Hours and minutes with units: "Xh Ym", "X hr Y min", "Xh 15", "Xh15", "X h Y", "X hr", "Xh", "0h 45m", "0h45"
+  else if (/^(\d+(?:\.\d+)?)\s*(?:hr|hrs|h|hours|hour)\s*(\d{1,2})?\s*(?:min|mins|m|minute|minutes)?$/.test(str)) {
+    const hUnitMatch = str.match(/^(\d+(?:\.\d+)?)\s*(?:hr|hrs|h|hours|hour)\s*(\d{1,2})?\s*(?:min|mins|m|minute|minutes)?$/);
     const h = parseFloat(hUnitMatch[1]);
     const m = hUnitMatch[2] ? parseInt(hUnitMatch[2], 10) : 0;
     if (!isNaN(h)) {
       if (hUnitMatch[1].includes('.') && !hUnitMatch[2]) {
-        return Math.round(h * 60);
+        totalMins = Math.round(h * 60);
+      } else {
+        totalMins = Math.round(h * 60 + m);
       }
-      return Math.round(h * 60 + m);
     }
   }
 
-  // 2. Check format "X 15m", "X hr 15m"
-  const hAndMinUnitMatch = str.match(/^(\d{1,2})\s+(\d{1,2})\s*(?:min|mins|m|minute|minutes)$/);
-  if (hAndMinUnitMatch) {
+  // 4. "X 15m", "X hr 15m"
+  else if (/^(\d{1,2})\s+(\d{1,2})\s*(?:min|mins|m|minute|minutes)$/.test(str)) {
+    const hAndMinUnitMatch = str.match(/^(\d{1,2})\s+(\d{1,2})\s*(?:min|mins|m|minute|minutes)$/);
     const h = parseInt(hAndMinUnitMatch[1], 10);
     const m = parseInt(hAndMinUnitMatch[2], 10);
     if (!isNaN(h) && !isNaN(m)) {
-      return h * 60 + m;
+      totalMins = h * 60 + m;
     }
   }
 
-  // 3. Separated notation with space(s), colon, dot, or dash: "07:30", "7 30", "7  15", "7:05", "7.15", "7-15"
-  const sepMatch = str.match(/^(\d{1,2})[\s:.-]+(\d{1,2})$/);
-  if (sepMatch) {
+  // 5. Separated notation with space(s), colon, dot, or dash: "07:30", "7 30", "7  15", "7:05", "7.15", "7-15", "0:45", "0 45"
+  else if (/^(\d{1,2})[\s:.-]+(\d{1,2})$/.test(str)) {
+    const sepMatch = str.match(/^(\d{1,2})[\s:.-]+(\d{1,2})$/);
     const h = parseInt(sepMatch[1], 10);
     const m = parseInt(sepMatch[2], 10);
-    // If dot notation was used with a single decimal digit 5 (7.5 -> 7h 30m)
     if (str.includes('.') && sepMatch[2].length === 1 && m === 5) {
-      return Math.round(parseFloat(str) * 60);
-    }
-    if (!isNaN(h) && !isNaN(m) && m < 60) {
-      return h * 60 + m;
+      totalMins = Math.round(parseFloat(str) * 60);
+    } else if (!isNaN(h) && !isNaN(m) && m < 60) {
+      totalMins = h * 60 + m;
     }
   }
 
-  // 4. Continuous 3 or 4 digits without separator: "715" -> 7h 15m, "0715" -> 7h 15m, "640" -> 6h 40m, "1015" -> 10h 15m
-  const digitsMatch = str.match(/^(\d{1,2})(\d{2})$/);
-  if (digitsMatch) {
+  // 6. Continuous 3 or 4 digits without separator: "715" -> 7h 15m, "0715" -> 7h 15m, "0045" -> 45m, "640" -> 6h 40m, "1015" -> 10h 15m
+  else if (/^(\d{1,2})(\d{2})$/.test(str)) {
+    const digitsMatch = str.match(/^(\d{1,2})(\d{2})$/);
     const h = parseInt(digitsMatch[1], 10);
     const m = parseInt(digitsMatch[2], 10);
     if (h <= 24 && m < 60) {
-      return h * 60 + m;
+      totalMins = h * 60 + m;
     }
   }
 
-  // 5. Single decimal number: "7.5" (7.5 hours -> 450 mins)
-  const decMatch = str.match(/^(\d+)\.(\d+)$/);
-  if (decMatch) {
+  // 7. Single decimal number: "7.5" (7.5 hours -> 450 mins), "0.5" (30 mins), "0.75" (45 mins), ".5" (30 mins)
+  else if (/^(\d*)\.(\d+)$/.test(str)) {
     const num = parseFloat(str);
     if (!isNaN(num)) {
-      return Math.round(num * 60);
+      totalMins = Math.round(num * 60);
     }
   }
 
-  // 6. Plain integer: "4" or "7" (<= 24 -> hours, e.g. 7 hours = 420 mins), "45" (> 24 -> minutes, e.g. 45 mins)
-  const plainNum = parseFloat(str);
-  if (!isNaN(plainNum)) {
-    if (plainNum <= 24) {
-      return Math.round(plainNum * 60);
-    } else {
-      return Math.round(plainNum);
+  // 8. Plain integer: "4" or "7" (<= 24 -> hours, e.g. 7 hours = 420 mins), "45" (> 24 -> minutes, e.g. 45 mins)
+  else {
+    const plainNum = parseFloat(str);
+    if (!isNaN(plainNum)) {
+      if (plainNum <= 24) {
+        totalMins = Math.round(plainNum * 60);
+      } else {
+        totalMins = Math.round(plainNum);
+      }
     }
   }
 
-  return 0;
+  if (!allowOver24h && totalMins > 1440) {
+    return 0;
+  }
+
+  return totalMins;
 }
 
 export function formatMinutesToDuration(mins) {
   if (!mins || isNaN(mins) || mins <= 0) return '';
   const h = Math.floor(mins / 60);
   const m = mins % 60;
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h 00m`;
   return `${h}h ${String(m).padStart(2, '0')}m`;
 }
 

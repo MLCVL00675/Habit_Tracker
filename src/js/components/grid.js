@@ -11,7 +11,8 @@ import {
   normalizeCalorieString,
   calculateHabitStreaks,
   isDayBeforeHabitCreated,
-  formatCreatedDate
+  formatCreatedDate,
+  showToast
 } from '../utils.js';
 
 export function renderMatrixTable() {
@@ -419,9 +420,13 @@ function attachGridListeners(tbody) {
           val = normalizeCalorieString(rawVal);
           input.value = val;
         } else {
-          const mins = parseDurationToMinutes(rawVal);
-          if (mins > 0) {
-            val = formatMinutesToDuration(mins);
+          const rawMins = parseDurationToMinutes(rawVal, true);
+          if (rawMins > 1440) {
+            showToast('Duration cannot exceed 24 hours (24h 00m)', '⚠️');
+            val = '';
+            input.value = '';
+          } else if (rawMins > 0) {
+            val = formatMinutesToDuration(rawMins);
             input.value = val;
           } else {
             val = '';
@@ -442,6 +447,12 @@ function attachGridListeners(tbody) {
       const metric = input.getAttribute('data-metric');
       const monthData = state.getCurrentMonthData();
       if (monthData.days && monthData.days[day]) {
+        if (metric === 'sleepTime' || metric === 'studyTime' || metric === 'screenTime') {
+          const checkMins = parseDurationToMinutes(input.value, true);
+          if (checkMins > 1440) {
+            return;
+          }
+        }
         monthData.days[day][metric] = input.value;
         state.saveToStorage();
       }

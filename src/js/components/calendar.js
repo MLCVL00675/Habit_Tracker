@@ -12,7 +12,8 @@ import {
   formatMinutesToDuration,
   normalizeTimeString,
   normalizeCalorieString,
-  isDayBeforeHabitCreated
+  isDayBeforeHabitCreated,
+  showToast
 } from '../utils.js';
 
 export function renderCalendarView() {
@@ -319,16 +320,31 @@ export function openDayDetailModal(day) {
       dayObj.wakeTime = normalizeTimeString(wakeInput.value);
     }
     if (sleepInput) {
-      const mins = parseDurationToMinutes(sleepInput.value);
-      dayObj.sleepTime = mins > 0 ? formatMinutesToDuration(mins) : '';
+      const mins = parseDurationToMinutes(sleepInput.value, true);
+      if (mins > 1440) {
+        showToast('Sleep duration cannot exceed 24 hours (24h 00m)', '⚠️');
+        dayObj.sleepTime = '';
+      } else {
+        dayObj.sleepTime = mins > 0 ? formatMinutesToDuration(mins) : '';
+      }
     }
     if (studyInput) {
-      const mins = parseDurationToMinutes(studyInput.value);
-      dayObj.studyTime = mins > 0 ? formatMinutesToDuration(mins) : '';
+      const mins = parseDurationToMinutes(studyInput.value, true);
+      if (mins > 1440) {
+        showToast('Study duration cannot exceed 24 hours (24h 00m)', '⚠️');
+        dayObj.studyTime = '';
+      } else {
+        dayObj.studyTime = mins > 0 ? formatMinutesToDuration(mins) : '';
+      }
     }
     if (screenInput) {
-      const mins = parseDurationToMinutes(screenInput.value);
-      dayObj.screenTime = mins > 0 ? formatMinutesToDuration(mins) : '';
+      const mins = parseDurationToMinutes(screenInput.value, true);
+      if (mins > 1440) {
+        showToast('Screen time cannot exceed 24 hours (24h 00m)', '⚠️');
+        dayObj.screenTime = '';
+      } else {
+        dayObj.screenTime = mins > 0 ? formatMinutesToDuration(mins) : '';
+      }
     }
     if (calInInput) {
       dayObj.caloriesIn = normalizeCalorieString(calInInput.value);
