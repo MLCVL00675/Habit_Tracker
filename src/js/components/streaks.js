@@ -127,10 +127,11 @@ export function renderStreaksView() {
         dotClass = 'dot-missed';
         dotChar = '✗';
         dotTooltip = `Day ${d}: Missed`;
-      } else if (!isScheduled && habit.frequencyType === 'specific_days') {
+      } else if (stateVal === 'rest' || (!isScheduled && habit.frequencyType === 'specific_days')) {
         dotClass = 'dot-rest';
         dotChar = '—';
-        dotTooltip = `Day ${d}: Rest Day (Off Rule)`;
+        const maxDashes = state.getMaxDashesForHabit(habit);
+        dotTooltip = `Day ${d}: Rest Day (Dash — | Max ${maxDashes}/wk)`;
       }
 
       dotsHtml += `

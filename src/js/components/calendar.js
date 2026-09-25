@@ -197,8 +197,9 @@ export function openDayDetailModal(day) {
     const isBeforeCreated = isDayBeforeHabitCreated(h, state.currentYear, state.currentMonth, day);
     const current = localHabits[h.id] || 'none';
     const scheduleBadge = state.getHabitScheduleLabel(h);
+    const maxDashes = state.getMaxDashesForHabit(h);
 
-    const isRest = isBeforeCreated || (!isScheduled && h.frequencyType === 'specific_days' && (current === 'none' || current === 'rest'));
+    const isRest = current === 'rest' || isBeforeCreated || (!isScheduled && h.frequencyType === 'specific_days' && current === 'none');
     let badgeText = '· Blank';
     let badgeClass = 'state-blank';
     if (current === 'done') {
@@ -208,7 +209,7 @@ export function openDayDetailModal(day) {
       badgeText = '✗ Missed';
       badgeClass = 'state-missed';
     } else if (isRest) {
-      badgeText = isBeforeCreated ? '— Not Active Yet' : '— Rest Day';
+      badgeText = isBeforeCreated ? '— Not Active Yet' : `— Rest Day (${maxDashes} max/wk)`;
       badgeClass = 'state-rest';
     }
 
@@ -273,11 +274,28 @@ export function openDayDetailModal(day) {
     item.addEventListener('click', () => {
       const habitId = item.getAttribute('data-habit-id');
       const habit = habits.find(h => h.id === habitId);
-      const isHabitScheduled = state.isHabitScheduledForDay(habit, state.currentYear, state.currentMonth, day);
+      if (!habit) return;
+
+      const maxDashes = state.getMaxDashesForHabit(habit);
       let current = localHabits[habitId] || 'none';
       let next = 'done';
-      if (!isHabitScheduled && habit.frequencyType === 'specific_days') {
-        next = (current === 'done') ? 'none' : 'done';
+
+      if (maxDashes > 0) {
+        if (current === 'none') {
+          next = 'done';
+        } else if (current === 'done') {
+          next = 'missed';
+        } else if (current === 'missed') {
+          const dashesInWeek = state.getHabitDashesInWeek(habitId, state.currentYear, state.currentMonth, day, day);
+          if (dashesInWeek < maxDashes) {
+            next = 'rest';
+          } else {
+            showToast(`Max ${maxDashes} rest dashes reached this week for "${habit.name}" (${7 - maxDashes}x/wk)`, '⚠️');
+            next = 'none';
+          }
+        } else if (current === 'rest') {
+          next = 'none';
+        }
       } else {
         if (current === 'none' || current === 'rest') next = 'done';
         else if (current === 'done') next = 'missed';
@@ -294,8 +312,8 @@ export function openDayDetailModal(day) {
         } else if (next === 'missed') {
           badge.textContent = '✗ Missed';
           badge.className = 'modal-habit-state-badge state-missed';
-        } else if (!isHabitScheduled && habit.frequencyType === 'specific_days') {
-          badge.textContent = '— Rest Day';
+        } else if (next === 'rest') {
+          badge.textContent = `— Rest Day (${maxDashes} max/wk)`;
           badge.className = 'modal-habit-state-badge state-rest';
         } else {
           badge.textContent = '· Blank';

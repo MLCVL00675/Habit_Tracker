@@ -1,8 +1,15 @@
-/* ==========================================================================
-   CHRONOLOG // CENTRAL STATE & PERSISTENCE ENGINE
-   ========================================================================== */
-
-import { MONTH_NAMES, getDaysInMonth, getDayOfWeek, parseDurationToMinutes, isDayBeforeHabitCreated, sound, showToast, triggerConfetti } from './utils.js';
+import { 
+  MONTH_NAMES, 
+  getDaysInMonth, 
+  getDayOfWeek, 
+  parseDurationToMinutes, 
+  isDayBeforeHabitCreated, 
+  getMaxDashesForHabit, 
+  getWeekDaysForDay, 
+  sound, 
+  showToast, 
+  triggerConfetti 
+} from './utils.js';
 import { authManager } from './auth.js';
 import { db } from './db.js';
 
@@ -192,7 +199,18 @@ export function createSampleAugust2026Data(habitsList = DEFAULT_HABITS) {
         : true;
 
       if (!isScheduled && h.frequencyType === 'specific_days') {
-        dayObj.habits[h.id] = 'none'; // Violet Dash Rest Day
+        dayObj.habits[h.id] = 'rest'; // Violet Dash Rest Day
+      } else if (h.frequencyType === 'weekly_target' && (h.weeklyTarget || 4) < 7) {
+        // For weekly target habits (e.g. 4x/wk), off-days within weekly dash quota render as rest dashes
+        const target = h.weeklyTarget || 4;
+        const weekDayIndex = (dow + 6) % 7; // Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+        // Distribute workouts on Mon, Wed, Fri, Sat (4 days) and rest dashes on Tue, Thu, Sun (3 days)
+        if (target === 4) {
+          const isWorkoutDay = [0, 2, 4, 5].includes(weekDayIndex);
+          dayObj.habits[h.id] = isWorkoutDay ? (idx < targetDone ? 'done' : 'missed') : 'rest';
+        } else {
+          dayObj.habits[h.id] = idx < targetDone ? 'done' : 'rest';
+        }
       } else {
         dayObj.habits[h.id] = idx < targetDone ? 'done' : 'missed';
       }
@@ -600,12 +618,35 @@ class AppState {
     this.setMonth(2026, 8);
   }
 
+  // Maximum allowed rest days (dashes —) per week for a habit (0 for 7x daily habits)
+  getMaxDashesForHabit(habit) {
+    return getMaxDashesForHabit(habit);
+  }
+
+  // Count existing rest dashes in the calendar week for habit
+  getHabitDashesInWeek(habitId, year = this.currentYear, month = this.currentMonth, day = 1, excludeDay = null) {
+    const monthKey = this.getMonthKey(year, month);
+    const monthData = this.allMonthsData[monthKey];
+    if (!monthData || !monthData.days) return 0;
+
+    const weekDays = getWeekDaysForDay(year, month, day);
+    let count = 0;
+    weekDays.forEach(d => {
+      if (d !== excludeDay && monthData.days[d]?.habits?.[habitId] === 'rest') {
+        count++;
+      }
+    });
+    return count;
+  }
+
   // Toggle habit state:
-  // For Scheduled habits:
+  // For 7x (daily) habits:
+  //   - Dashes are NOT allowed.
   //   - Past days: missed (not done) -> done (completed) -> missed (not done)
   //   - Today / future days: none (blank) -> done (completed) -> missed (not done) -> none (blank)
-  // For Unscheduled rest days (frequencyType === 'specific_days' and off-rule day):
-  //   - Rest days can NEVER be 'missed'! They toggle: none (rest dash —) -> done (extra credit ✓) -> none (rest dash —)
+  // For Non-7x habits (e.g. 4x/wk, specific days < 7):
+  //   - Cycle: none -> done (✓) -> missed (✗) -> rest (— dash, max 7 - target per week) -> none / done
+  //   - For example, if habit is 4x, maximum dashes in a week is 3.
   toggleHabit(day, habitId) {
     const monthData = this.getCurrentMonthData();
     if (!monthData.days[day]) return;
@@ -615,9 +656,11 @@ class AppState {
     }
 
     const habit = this.getHabit(habitId);
-    const isScheduled = this.isHabitScheduledForDay(habit, this.currentYear, this.currentMonth, day);
+    if (!habit) return;
 
     const current = monthData.days[day].habits[habitId] || 'none';
+    const maxDashes = this.getMaxDashesForHabit(habit);
+
     const now = new Date();
     const isPastDay = (
       this.currentYear < now.getFullYear() ||
@@ -627,17 +670,30 @@ class AppState {
 
     let next = 'done';
 
-    if (!isScheduled && habit?.frequencyType === 'specific_days') {
-      // Unscheduled rest day: toggle between 'done' and 'none' (never 'missed')
-      if (current === 'done') {
-        next = 'none';
-        sound.playUncheck();
-      } else {
+    if (maxDashes > 0) {
+      // Non-7x habit: dashes are allowed up to maxDashes per week (e.g. 3 for 4x/wk)
+      if (current === 'none') {
         next = 'done';
         sound.playCheck();
+      } else if (current === 'done') {
+        next = 'missed';
+        sound.playUncheck();
+      } else if (current === 'missed') {
+        // Attempt transition to 'rest' (dash)
+        const dashesInWeek = this.getHabitDashesInWeek(habitId, this.currentYear, this.currentMonth, day, day);
+        if (dashesInWeek < maxDashes) {
+          next = 'rest';
+          sound.playCheck();
+        } else {
+          showToast(`Max ${maxDashes} rest dashes reached this week for "${habit.name}" (${7 - maxDashes}x/wk)`, '⚠️');
+          next = isPastDay ? 'done' : 'none';
+        }
+      } else if (current === 'rest') {
+        // From rest dash: on past days go to done, on today/future go to none (blank)
+        next = isPastDay ? 'done' : 'none';
       }
     } else {
-      // Scheduled habit
+      // 7x habit (Daily): strictly no dashes allowed!
       if (current === 'none' || current === 'rest') {
         next = 'done';
         sound.playCheck();

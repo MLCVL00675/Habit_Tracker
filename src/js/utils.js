@@ -274,6 +274,49 @@ export function formatCreatedDate(isoStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+/**
+ * Returns the maximum allowed rest days (dashes —) in a week for a habit.
+ * Only habits that are NOT 7x allow dashes.
+ * If target is 4x -> max 3 dashes.
+ * If 7x (daily) -> 0 dashes.
+ */
+export function getMaxDashesForHabit(habit) {
+  if (!habit) return 0;
+  if (habit.frequencyType === 'daily') return 0;
+  if (habit.weeklyTarget >= 7 && habit.frequencyType !== 'specific_days') return 0;
+  if (habit.frequencyType === 'weekly_target') {
+    const target = habit.weeklyTarget || 4;
+    return target >= 7 ? 0 : Math.max(0, 7 - target);
+  }
+  if (habit.frequencyType === 'specific_days') {
+    const target = (Array.isArray(habit.specificDays) ? habit.specificDays.length : (habit.weeklyTarget || 7));
+    return target >= 7 ? 0 : Math.max(0, 7 - target);
+  }
+  if (habit.weeklyTarget && habit.weeklyTarget < 7) {
+    return Math.max(0, 7 - habit.weeklyTarget);
+  }
+  return 0;
+}
+
+/**
+ * Returns an array of day numbers [d1, d2, ...] in the month (1 to totalDays)
+ * that belong to the standard Monday-to-Sunday calendar week containing `day`.
+ */
+export function getWeekDaysForDay(year, month, day) {
+  const totalDays = getDaysInMonth(year, month);
+  const dow = getDayOfWeek(year, month, day); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+  // Monday is start of week: Monday offset = (dow + 6) % 7
+  const offsetFromMon = (dow + 6) % 7;
+  const mondayDay = day - offsetFromMon;
+  const days = [];
+  for (let d = mondayDay; d <= mondayDay + 6; d++) {
+    if (d >= 1 && d <= totalDays) {
+      days.push(d);
+    }
+  }
+  return days;
+}
+
 // Calculate streaks for habits across all days (supporting Daily, Specific Days, and Weekly Targets)
 export function calculateHabitStreaks(monthData, habitOrId, totalDays, isHabitScheduledFn = null, year = 2026, month = 9) {
   const habitId = typeof habitOrId === 'object' && habitOrId !== null ? habitOrId.id : habitOrId;

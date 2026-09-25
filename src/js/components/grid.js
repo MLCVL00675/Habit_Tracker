@@ -134,9 +134,14 @@ export function renderMatrixTable() {
 
     habits.forEach(h => {
       const isScheduled = state.isHabitScheduledForDay(h, state.currentYear, state.currentMonth, day);
-      if (isScheduled) scheduledHabitsCount++;
-
+      const isBeforeCreated = isDayBeforeHabitCreated(h, state.currentYear, state.currentMonth, day);
       const s = dayRecord.habits ? dayRecord.habits[h.id] : 'none';
+      const isRest = s === 'rest' || isBeforeCreated || (!isScheduled && h.frequencyType === 'specific_days');
+
+      if (!isRest && isScheduled) {
+        scheduledHabitsCount++;
+      }
+
       if (s === 'done') {
         habitsDoneCount++;
         habitDoneCounts[h.id]++;
@@ -192,25 +197,37 @@ export function renderMatrixTable() {
       const isScheduled = state.isHabitScheduledForDay(h, state.currentYear, state.currentMonth, day);
       const isBeforeCreated = isDayBeforeHabitCreated(h, state.currentYear, state.currentMonth, day);
       const rawState = (dayRecord.habits && dayRecord.habits[h.id]) || 'none';
+      const maxDashes = state.getMaxDashesForHabit(h);
       
       let stateVal = rawState;
       let symbol = '·';
       let isRestDay = false;
 
-      if (isBeforeCreated || (!isScheduled && h.frequencyType === 'specific_days')) {
-        if (rawState === 'none' || rawState === 'rest') {
+      if (isBeforeCreated) {
+        if (rawState === 'done') {
+          symbol = '✓';
+        } else {
           isRestDay = true;
           stateVal = 'rest';
           symbol = '—';
-        } else if (rawState === 'done') {
-          symbol = '✓';
-        } else if (rawState === 'missed') {
-          symbol = '✗';
         }
+      } else if (rawState === 'rest') {
+        isRestDay = true;
+        stateVal = 'rest';
+        symbol = '—';
+      } else if (rawState === 'done') {
+        symbol = '✓';
+      } else if (rawState === 'missed') {
+        symbol = '✗';
       } else {
-        if (rawState === 'done') symbol = '✓';
-        else if (rawState === 'missed') symbol = '✗';
-        else symbol = '·';
+        // rawState === 'none'
+        if (h.frequencyType === 'specific_days' && !isScheduled) {
+          isRestDay = true;
+          stateVal = 'rest';
+          symbol = '—';
+        } else {
+          symbol = '·';
+        }
       }
 
       const restClass = isRestDay ? 'habit-rest-day' : '';
@@ -219,7 +236,7 @@ export function renderMatrixTable() {
       const tooltipText = isBeforeCreated
         ? `${h.name} (Day ${day} - ${WEEKDAYS_FULL[dayOfWeekIdx]}): Not active yet (Created on ${formatCreatedDate(h.createdAt)})`
         : (isRestDay
-            ? `${h.name} (Day ${day} - ${WEEKDAYS_FULL[dayOfWeekIdx]}): Rest Day (Not scheduled on ${dayOfWeekStr})`
+            ? `${h.name} (Day ${day} - ${WEEKDAYS_FULL[dayOfWeekIdx]}): Rest Day (Dash — | Max ${maxDashes}/wk)`
             : `${h.name} (Day ${day} - ${WEEKDAYS_FULL[dayOfWeekIdx]}): ${stateVal === 'done' ? 'Completed' : (stateVal === 'missed' ? 'Missed' : 'Blank')}`);
 
       return `
