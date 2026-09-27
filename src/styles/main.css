@@ -186,6 +186,7 @@
 
 html, body {
   width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   font-family: var(--font-sans);
   background-color: var(--bg-app);
@@ -193,7 +194,8 @@ html, body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: visible;
+  overflow-x: hidden;
+  position: relative;
 }
 
 /* Bullet Journal Dot Grid Background Texture */
@@ -221,8 +223,10 @@ body::before {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  height: auto;
-  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 button, input, select, textarea {
@@ -252,6 +256,9 @@ button {
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border-subtle);
   gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 [data-theme="paper"] .app-header {
   background: rgba(255, 255, 255, 0.9);
@@ -605,6 +612,9 @@ button {
   border-bottom: 1px solid var(--border-subtle);
   gap: 8px;
   overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .tab-btn {
@@ -655,21 +665,29 @@ button {
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .tab-pane {
   display: none;
   animation: fadeIn 0.25s ease forwards;
   flex: 1;
-  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .tab-pane.active {
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 @keyframes fadeIn {
@@ -684,9 +702,10 @@ button {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-width: max-content;
+  max-width: 100%;
+  min-width: 0;
   flex: 1;
-  overflow: visible;
+  box-sizing: border-box;
 }
 
 .grid-table-container {
@@ -694,11 +713,13 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  overflow: visible;
   width: 100%;
-  min-width: max-content;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .table-top-bar {
@@ -711,6 +732,9 @@ button {
   gap: 12px;
   flex-wrap: wrap;
   flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
@@ -780,16 +804,20 @@ button {
    -------------------------------------------------------------------------- */
 .matrix-table-wrapper {
   width: 100%;
-  min-width: max-content;
-  overflow: visible;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
   position: relative;
   background-color: var(--bg-surface);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 .habit-matrix-table {
-  width: 100%;
-  min-width: max-content;
+  width: max-content;
+  min-width: 100%;
   border-collapse: separate !important;
   border-spacing: 0 !important;
   font-size: 0.82rem;
@@ -818,8 +846,10 @@ button {
   position: sticky !important;
   left: 0 !important;
   top: 0 !important;
-  z-index: 50 !important;
+  z-index: 55 !important;
   background-color: #0d131f !important;
+  border-right: 2px solid var(--border-medium) !important;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
   color: var(--text-secondary);
 }
 .th-group-metrics { background-color: #0d131f !important; color: var(--accent-cyan); }
@@ -856,6 +886,8 @@ button {
   top: 32px !important;
   z-index: 50 !important;
   background-color: #0d131f !important;
+  border-right: 2px solid var(--border-medium) !important;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
 }
 
 .th-content {
@@ -947,7 +979,7 @@ button {
   width: 42px;
   min-width: 42px;
   max-width: 42px;
-  background-color: #0b111e !important;
+  background-color: #0f172a !important;
 }
 
 .sticky-col-2 {
@@ -957,8 +989,9 @@ button {
   width: 50px;
   min-width: 50px;
   max-width: 50px;
-  background-color: #0b111e !important;
+  background-color: #0f172a !important;
   border-right: 2px solid var(--border-medium) !important;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
 }
 
 tbody .sticky-col-1 {
@@ -972,19 +1005,13 @@ tbody .sticky-col-1 {
 }
 
 tbody .sticky-col-2 {
+  background-color: #0f172a !important;
   color: var(--accent-cyan);
   font-family: var(--font-mono);
-  font-weight: 800;
-  font-size: 0.88rem;
-  text-align: center;
-  letter-spacing: 0.02em;
-}
-
-tbody .sticky-col-2 {
-  background: var(--bg-surface);
   font-weight: 600;
   font-size: 0.80rem;
   text-align: center;
+  letter-spacing: 0.02em;
 }
 
 tbody tr:hover .sticky-col-1,
