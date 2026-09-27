@@ -184,7 +184,12 @@
   background: transparent;
 }
 
-html, body {
+html {
+  overflow-x: auto;
+  overflow-y: scroll;
+}
+
+body {
   width: 100%;
   min-height: 100vh;
   font-family: var(--font-sans);
@@ -193,8 +198,7 @@ html, body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: auto;
-  overflow-y: visible;
+  overflow: visible;
   position: relative;
 }
 
@@ -672,7 +676,6 @@ button {
 
 .tab-pane {
   display: none;
-  animation: fadeIn 0.25s ease forwards;
   flex: 1;
   width: 100%;
   min-width: max-content;
@@ -686,11 +689,12 @@ button {
   width: 100%;
   min-width: max-content;
   overflow: visible;
+  animation: fadeIn 0.2s ease;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* --------------------------------------------------------------------------
