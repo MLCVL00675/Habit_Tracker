@@ -6260,6 +6260,865 @@ tbody tr:hover .sticky-col-2 {
   color: var(--text-muted);
 }
 
+/* ==========================================================================
+   GOOGLE CALENDAR INTEGRATION & ALERTS UI STYLES
+   ========================================================================== */
+
+/* Top Grid Toolbar Sync Button */
+.btn-gcal-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.12), rgba(52, 168, 83, 0.08));
+  border: 1px solid rgba(66, 133, 244, 0.4);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.08);
+}
+
+.btn-gcal-sync:hover {
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.22), rgba(52, 168, 83, 0.16));
+  border-color: rgba(66, 133, 244, 0.7);
+  box-shadow: 0 4px 14px rgba(66, 133, 244, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-gcal-sync:active {
+  transform: translateY(0);
+}
+
+.gcal-btn-svg {
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.gcal-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: 9999px;
+  transition: all var(--transition-fast);
+}
+
+.gcal-count-badge.badge-active {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+}
+
+.gcal-count-badge.badge-zero {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   STREAKS CARD GOOGLE CALENDAR ROW
+   -------------------------------------------------------------------------- */
+.streak-gcal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0 6px 0;
+  padding: 8px 12px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  gap: 10px;
+  transition: all var(--transition-fast);
+}
+
+.streak-gcal-bar.gcal-active {
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.08), rgba(52, 168, 83, 0.05));
+  border-color: rgba(66, 133, 244, 0.35);
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.08);
+}
+
+.streak-gcal-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.streak-gcal-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.gcal-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.gcal-active .gcal-toggle-label {
+  color: var(--text-primary);
+}
+
+/* Custom Toggle Switch */
+.gcal-switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.gcal-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.gcal-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-surface-hover);
+  border: 1px solid var(--border-medium);
+  border-radius: 9999px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gcal-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #cbd5e1;
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gcal-switch input:checked + .gcal-slider {
+  background: linear-gradient(135deg, #4285F4, #34A853);
+  border-color: #4285F4;
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.4);
+}
+
+.gcal-switch input:checked + .gcal-slider:before {
+  transform: translateX(14px);
+  background-color: #ffffff;
+}
+
+/* Streak Reminder Time Input */
+.streak-reminder-time-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  background: var(--bg-surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.streak-reminder-time-wrap:focus-within {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+}
+
+.streak-reminder-clock {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.streak-time-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  outline: none;
+  padding: 2px 0;
+  cursor: pointer;
+}
+
+.streak-time-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.8) sepia(100%) hue-rotate(180deg);
+  opacity: 0.7;
+}
+
+/* Streak Individual Sync Button */
+.btn-streak-gcal-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-surface-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-streak-gcal-sync:hover {
+  background: rgba(66, 133, 244, 0.15);
+  border-color: rgba(66, 133, 244, 0.5);
+  color: #60a5fa;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.2);
+}
+
+.btn-streak-gcal-sync.is-synced {
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+/* --------------------------------------------------------------------------
+   HABITS MANAGER PILLS
+   -------------------------------------------------------------------------- */
+.habit-reminder-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.habit-gcal-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: rgba(66, 133, 244, 0.12);
+  border: 1px solid rgba(66, 133, 244, 0.35);
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+/* --------------------------------------------------------------------------
+   GOOGLE CALENDAR MODAL STYLES
+   -------------------------------------------------------------------------- */
+.gcal-modal-card {
+  max-width: 680px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.gcal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gcal-brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: rgba(66, 133, 244, 0.12);
+  border: 1px solid rgba(66, 133, 244, 0.3);
+}
+
+.gcal-modal-body {
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Status Hero */
+.gcal-status-hero {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gcal-status-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.gcal-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 10px;
+  background: var(--bg-surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.gcal-stat-num {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+}
+
+.gcal-stat-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.gcal-status-info-note {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Batch Controls */
+.gcal-batch-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gcal-quick-toggle-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* Habits Scrollable List */
+.gcal-habits-list-container {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface-card);
+  overflow: hidden;
+}
+
+.gcal-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--bg-surface-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.gcal-habits-scroll-list {
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.gcal-habit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 12px;
+  transition: all var(--transition-fast);
+}
+
+.gcal-habit-item:last-child {
+  border-bottom: none;
+}
+
+.gcal-habit-item:hover {
+  background: var(--bg-surface-hover);
+}
+
+.gcal-habit-item.item-enabled {
+  background: rgba(66, 133, 244, 0.03);
+}
+
+.gcal-habit-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Custom Checkbox */
+.gcal-custom-checkbox-wrap {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.gcal-custom-checkbox-wrap input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.gcal-custom-checkbox-mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: var(--bg-surface-elevated);
+  border: 1.5px solid var(--border-medium);
+  border-radius: 6px;
+  transition: all var(--transition-fast);
+}
+
+.gcal-custom-checkbox-wrap:hover input ~ .gcal-custom-checkbox-mark {
+  border-color: #4285F4;
+}
+
+.gcal-custom-checkbox-wrap input:checked ~ .gcal-custom-checkbox-mark {
+  background: linear-gradient(135deg, #4285F4, #34A853);
+  border-color: #4285F4;
+  box-shadow: 0 0 8px rgba(66, 133, 244, 0.4);
+}
+
+.gcal-custom-checkbox-mark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.gcal-custom-checkbox-wrap input:checked ~ .gcal-custom-checkbox-mark:after {
+  display: block;
+}
+
+.gcal-habit-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.gcal-habit-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gcal-habit-name-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gcal-habit-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gcal-sync-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.gcal-habit-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.gcal-habit-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.gcal-time-picker-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.gcal-time-picker-wrap:focus-within {
+  border-color: #4285F4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.gcal-time-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.gcal-time-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  width: 90px;
+}
+
+.btn-gcal-single-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-gcal-single-sync:hover {
+  background: rgba(66, 133, 244, 0.15);
+  border-color: #4285F4;
+  color: #60a5fa;
+  transform: translateY(-1px);
+}
+
+/* Collapsible Settings Accordion */
+.gcal-settings-accordion {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.gcal-settings-summary {
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  list-style: none;
+}
+
+.gcal-settings-summary::-webkit-details-marker {
+  display: none;
+}
+
+.gcal-settings-accordion[open] .gcal-settings-summary {
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.gcal-settings-accordion[open] .accordion-arrow {
+  transform: rotate(180deg);
+}
+
+.accordion-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+
+.gcal-settings-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gcal-auth-status-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.gcal-auth-status-box.auth-connected {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+/* Modal Footer */
+.gcal-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.gcal-primary-sync-btn {
+  background: linear-gradient(135deg, #4285F4, #34A853) !important;
+  border-color: #4285F4 !important;
+  box-shadow: 0 2px 12px rgba(66, 133, 244, 0.35) !important;
+  font-weight: 700;
+}
+
+.gcal-primary-sync-btn:hover {
+  box-shadow: 0 4px 18px rgba(66, 133, 244, 0.5) !important;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .gcal-status-stats {
+    grid-template-columns: 1fr;
+  }
+  .gcal-habit-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .gcal-habit-right {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding-left: 32px;
+  }
+}
+
+/* ==========================================================================
+   HABIT RETIREMENT & LIFECYCLE STYLES
+   ========================================================================== */
+
+.habits-tab-filter-bar {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-surface-card);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.habits-tab-chip {
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.habits-tab-chip:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-hover);
+}
+
+.habits-tab-chip.active {
+  color: var(--text-primary);
+  background: var(--bg-surface-elevated);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Retired Habit Card State */
+.habit-manage-card.card-retired {
+  opacity: 0.85;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.04), rgba(236, 72, 153, 0.03));
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.habit-retired-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: rgba(236, 72, 153, 0.12);
+  border: 1px solid rgba(236, 72, 153, 0.35);
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #f472b6;
+}
+
+/* Action Buttons */
+.btn-retire-habit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-sm);
+  color: #a78bfa;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-retire-habit:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.6);
+  color: #c4b5fd;
+  transform: translateY(-1px);
+}
+
+.btn-reactivate-habit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15));
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: var(--radius-sm);
+  color: #34d399;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-reactivate-habit:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 182, 212, 0.25));
+  border-color: #10b981;
+  color: #6ee7b7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+/* Retire Habit Modal */
+.habit-retire-modal-card {
+  max-width: 520px;
+  width: 92%;
+}
+
+.retire-habit-body-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.retire-habit-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.retire-habit-avatar {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.retire-habit-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.retire-habit-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+}
+
+.retire-habit-category {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.retire-info-callout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(139, 92, 246, 0.06);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.retire-callout-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.callout-icon {
+  font-size: 0.95rem;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+
+
 
 
 

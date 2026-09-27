@@ -21,7 +21,7 @@ export function renderMatrixTable() {
   const tfoot = document.getElementById('habit-matrix-foot');
   if (!tbody || !tfoot) return;
 
-  const habits = state.getHabits();
+  const habits = state.getActiveHabits(state.currentYear, state.currentMonth);
   const monthData = state.getCurrentMonthData();
   const totalDays = getDaysInMonth(state.currentYear, state.currentMonth);
   const today = new Date();

@@ -35,7 +35,7 @@ export function renderAnalyticsView() {
 }
 
 function calculateAndRenderKPIs(monthData, totalDays) {
-  const habits = state.getHabits();
+  const habits = state.getActiveHabits(state.currentYear, state.currentMonth);
   let totalStudyMins = 0;
   let totalScreenMins = 0;
   let totalSleepMins = 0;
@@ -307,7 +307,7 @@ function renderHabitConsistencyChart(monthData, totalDays) {
   const canvas = document.getElementById('habit-consistency-chart');
   if (!canvas) return;
 
-  const habits = state.getHabits();
+  const habits = state.getActiveHabits(state.currentYear, state.currentMonth);
   const habitStats = habits.map(h => {
     let done = 0;
     for (let d = 1; d <= totalDays; d++) {

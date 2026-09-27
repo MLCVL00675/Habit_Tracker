@@ -26,7 +26,7 @@ export function renderCalendarView() {
     monthBanner.textContent = `${monthName} ${state.currentYear}`;
   }
 
-  const habits = state.getHabits();
+  const habits = state.getActiveHabits(state.currentYear, state.currentMonth);
   const monthData = state.getCurrentMonthData();
   const totalDays = getDaysInMonth(state.currentYear, state.currentMonth);
   const firstDayOfWeek = getDayOfWeek(state.currentYear, state.currentMonth, 1); // 0 = Sun, 6 = Sat

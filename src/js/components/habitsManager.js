@@ -1,9 +1,9 @@
 /* ==========================================================================
-   CHRONOLOG // HABITS MANAGER COMPONENT (CRUD & FLEXIBLE FREQUENCY SCHEDULES)
+   CHRONOLOG // HABITS MANAGER COMPONENT (CRUD, FREQUENCY & RETIREMENT STUDIO)
    ========================================================================== */
 
 import { state } from '../state.js';
-import { getDaysInMonth, sound, showToast, escapeHtml } from '../utils.js';
+import { MONTH_NAMES, getDaysInMonth, sound, showToast, escapeHtml } from '../utils.js';
 import { showConfirmDialog } from './confirmModal.js';
 
 const PRESET_ICONS = [
@@ -30,20 +30,69 @@ const WEEKDAY_NAMES = [
 let selectedNewIcon = '⭐';
 let selectedEditIcon = '⭐';
 let editingHabitId = null;
+let retiringHabitId = null;
+let habitsManagerTab = 'active'; // 'active' | 'retired'
+
+// Helper to format YYYY-MM to readable month label (e.g. "October 2026")
+function formatRetiredMonthLabel(monthKey) {
+  if (!monthKey) return 'Current Month';
+  const [y, m] = monthKey.split('-').map(Number);
+  if (!y || !m) return monthKey;
+  return `${MONTH_NAMES[m - 1]} ${y}`;
+}
+
+// Generate next 18 months options for the retirement month selector
+function generateRetirementMonthOptions(selectedKey = null) {
+  const options = [];
+  const startYear = state.currentYear;
+  const startMonth = state.currentMonth;
+
+  // Include current month and next 17 months
+  for (let i = 0; i < 18; i++) {
+    let m = startMonth + i;
+    let y = startYear;
+    while (m > 12) {
+      m -= 12;
+      y += 1;
+    }
+    const key = `${y}-${String(m).padStart(2, '0')}`;
+    const isCurrent = (y === state.currentYear && m === state.currentMonth);
+    const isNext = (i === 1);
+    let note = '';
+    if (isCurrent) note = ' (Effective this month)';
+    else if (isNext) note = ' (Effective next month)';
+
+    const label = `${MONTH_NAMES[m - 1]} ${y}${note}`;
+    const isSelected = selectedKey ? selectedKey === key : (i === 0);
+
+    options.push({ key, label, isSelected });
+  }
+
+  // Also include selectedKey if it's in the past or not in the range
+  if (selectedKey && !options.some(o => o.key === selectedKey)) {
+    options.unshift({ key: selectedKey, label: formatRetiredMonthLabel(selectedKey), isSelected: true });
+  }
+
+  return options;
+}
 
 export function renderHabitsManagerView() {
   const container = document.getElementById('habits-tab');
   if (!container) return;
 
-  const habits = state.getHabits();
+  const allHabits = state.getAllHabits();
+  const activeHabits = state.getActiveHabits(state.currentYear, state.currentMonth);
+  const retiredHabits = state.getRetiredHabits();
   const monthData = state.getCurrentMonthData();
   const totalDays = getDaysInMonth(state.currentYear, state.currentMonth);
 
   // Statistics calculation
-  const totalHabits = habits.length;
-  const dailyHabits = habits.filter(h => h.frequencyType === 'daily').length;
-  const weeklyTargetHabits = habits.filter(h => h.frequencyType === 'weekly_target').length;
-  const specificDaysHabits = habits.filter(h => h.frequencyType === 'specific_days').length;
+  const totalHabits = allHabits.length;
+  const dailyHabits = allHabits.filter(h => h.frequencyType === 'daily' && !h.retiredMonth).length;
+  const weeklyTargetHabits = allHabits.filter(h => h.frequencyType === 'weekly_target' && !h.retiredMonth).length;
+  const specificDaysHabits = allHabits.filter(h => h.frequencyType === 'specific_days' && !h.retiredMonth).length;
+
+  const habitsToDisplay = habitsManagerTab === 'retired' ? retiredHabits : activeHabits;
 
   container.innerHTML = `
     <div class="habits-manager-layout">
@@ -52,17 +101,21 @@ export function renderHabitsManagerView() {
         <div class="habits-hero-left">
           <div class="habits-hero-icon">⚙️</div>
           <div class="habits-hero-text">
-            <h2 class="section-title">Habit Configuration & Frequency Studio</h2>
+            <h2 class="section-title">Habit Configuration, Frequency & Lifecycle Studio</h2>
             <p class="section-subtitle">
-              Add, modify, and customize your habits. Configure habits for daily execution, flexible weekly quotas (e.g. 3x/week), or designated weekdays.
+              Add new habits, adjust schedules, or retire completed habits starting from any specific month while safely preserving all historical logs.
             </p>
           </div>
         </div>
 
         <div class="habits-stat-chips-group">
           <div class="habit-stat-chip">
-            <span class="chip-num">${totalHabits}</span>
-            <span class="chip-lbl">Total Habits</span>
+            <span class="chip-num">${activeHabits.length}</span>
+            <span class="chip-lbl">Active Habits</span>
+          </div>
+          <div class="habit-stat-chip">
+            <span class="chip-num" style="color:var(--accent-purple);">${retiredHabits.length}</span>
+            <span class="chip-lbl">Retired</span>
           </div>
           <div class="habit-stat-chip">
             <span class="chip-num" style="color:var(--accent-cyan);">${dailyHabits}</span>
@@ -71,10 +124,6 @@ export function renderHabitsManagerView() {
           <div class="habit-stat-chip">
             <span class="chip-num" style="color:var(--accent-gold);">${weeklyTargetHabits}</span>
             <span class="chip-lbl">Weekly Target</span>
-          </div>
-          <div class="habit-stat-chip">
-            <span class="chip-num" style="color:var(--accent-purple);">${specificDaysHabits}</span>
-            <span class="chip-lbl">Specific Days</span>
           </div>
         </div>
       </div>
@@ -122,7 +171,9 @@ export function renderHabitsManagerView() {
               <label class="form-label" for="new-habit-category">Category</label>
               <div class="select-wrapper">
                 <select id="new-habit-category" class="form-select">
-                  ${PRESET_CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                  ${PRESET_CATEGORIES.map(cat => `
+                    <option value="${cat}">${cat}</option>
+                  `).join('')}
                 </select>
                 <div class="select-arrow">▾</div>
               </div>
@@ -189,6 +240,24 @@ export function renderHabitsManagerView() {
               <span class="hint-text">Click to toggle the specific days this habit is scheduled.</span>
             </div>
 
+            <!-- Reminder Time & Google Calendar Alert -->
+            <div class="form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="new-habit-reminder-time">⏰ Daily Reminder Time</label>
+                <input type="time" id="new-habit-reminder-time" class="form-input" value="08:00" />
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">📅 G-Cal Alert</label>
+                <div class="gcal-toggle-inline" style="display: flex; align-items: center; gap: 8px; height: 38px;">
+                  <label class="gcal-switch">
+                    <input type="checkbox" id="new-habit-gcal-enabled" />
+                    <span class="gcal-slider"></span>
+                  </label>
+                  <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Enable Sync</span>
+                </div>
+              </div>
+            </div>
+
             <!-- Dynamic XP Commitment Preview -->
             <div class="frequency-xp-preview" id="new-xp-preview-box">
               <div class="xp-preview-header">
@@ -196,7 +265,7 @@ export function renderHabitsManagerView() {
                 <span class="xp-preview-title">Discipline Reward Preview</span>
               </div>
               <div class="xp-preview-body" id="new-xp-preview-text">
-                <strong>+35 XP</strong> per check · <strong>+310 XP</strong> Monthly Target Mastery Bonus (31 target days)
+                <strong>+10 XP</strong> per check · <strong>+60 XP</strong> Monthly Target Mastery Bonus (30 target days)
               </div>
             </div>
 
@@ -211,14 +280,23 @@ export function renderHabitsManagerView() {
           <div class="habits-list-header">
             <div class="card-title-group">
               <span class="card-icon">📋</span>
-              <h3 class="card-title">Configured Habits (${habits.length})</h3>
+              <h3 class="card-title">Configured Habits</h3>
             </div>
-            <span class="hint-text">Use ⬆️ ⬇️ to reorder columns in the Monthly Grid.</span>
+            <!-- Lifecycle Tab Filter (Active vs Retired) -->
+            <div class="habits-tab-filter-bar">
+              <button class="habits-tab-chip ${habitsManagerTab === 'active' ? 'active' : ''}" data-tab="active">
+                Active Habits (${activeHabits.length})
+              </button>
+              <button class="habits-tab-chip ${habitsManagerTab === 'retired' ? 'active' : ''}" data-tab="retired">
+                📦 Retired (${retiredHabits.length})
+              </button>
+            </div>
           </div>
 
           <div class="habits-items-scroll">
             <div class="habits-cards-stack" id="habits-cards-stack">
-              ${habits.map((habit, index) => {
+              ${habitsToDisplay.length > 0 ? habitsToDisplay.map((habit, index) => {
+                const isRetired = Boolean(habit.retiredMonth);
                 const targetDays = state.getHabitTargetDays(habit, state.currentYear, state.currentMonth);
                 const scheduleLabel = state.getHabitScheduleLabel(habit);
                 const checkXP = state.getHabitCheckXP(habit);
@@ -235,13 +313,15 @@ export function renderHabitsManagerView() {
                 const isTargetReached = completedCount >= targetDays && targetDays > 0;
 
                 return `
-                  <div class="habit-manage-card" data-habit-id="${habit.id}">
+                  <div class="habit-manage-card ${isRetired ? 'card-retired' : ''}" data-habit-id="${habit.id}">
                     <div class="habit-card-left">
-                      <!-- Reorder Buttons -->
-                      <div class="habit-reorder-group">
-                        <button class="reorder-btn move-up-btn" data-index="${index}" title="Move Up" ${index === 0 ? 'disabled' : ''}>▲</button>
-                        <button class="reorder-btn move-down-btn" data-index="${index}" title="Move Down" ${index === habits.length - 1 ? 'disabled' : ''}>▼</button>
-                      </div>
+                      <!-- Reorder Buttons (only for active list) -->
+                      ${!isRetired ? `
+                        <div class="habit-reorder-group">
+                          <button class="reorder-btn move-up-btn" data-index="${index}" title="Move Up" ${index === 0 ? 'disabled' : ''}>▲</button>
+                          <button class="reorder-btn move-down-btn" data-index="${index}" title="Move Down" ${index === activeHabits.length - 1 ? 'disabled' : ''}>▼</button>
+                        </div>
+                      ` : ''}
 
                       <!-- Icon & Info -->
                       <div class="habit-card-icon">${habit.icon}</div>
@@ -249,39 +329,105 @@ export function renderHabitsManagerView() {
                         <div class="habit-card-title-row">
                           <span class="habit-card-name">${escapeHtml(habit.name)}</span>
                           <span class="habit-category-badge">${escapeHtml(habit.category || 'General')}</span>
-                          <span class="habit-xp-pill" title="Earn +${checkXP} XP per check based on ${targetDays} target days commitment (+${masteryBonusXP} XP 100% target mastery bonus)">⚡ +${checkXP} XP / check</span>
+                          ${isRetired ? `
+                            <span class="habit-retired-tag" title="Retired starting ${formatRetiredMonthLabel(habit.retiredMonth)}">
+                              📦 Retired (${formatRetiredMonthLabel(habit.retiredMonth)})
+                            </span>
+                          ` : `
+                            <span class="habit-xp-pill" title="Earn +${checkXP} XP per check (+${masteryBonusXP} XP monthly bonus)">⚡ +${checkXP} XP</span>
+                          `}
                         </div>
                         <div class="habit-card-schedule-row">
                           <span class="habit-frequency-pill frequency-${habit.frequencyType}">
                             ${habit.frequencyType === 'daily' ? '⚡' : (habit.frequencyType === 'weekly_target' ? '🎯' : '📅')} ${scheduleLabel}
                           </span>
-                          <span class="habit-target-counter">
-                            Month Progress: <strong>${completedCount}/${targetDays} days</strong> (${progressPct}%)
-                            ${isTargetReached ? ' <span class="target-star" title="Target Achieved! +Bonus XP">🎯 100% Mastered</span>' : ''}
+                          <span class="habit-reminder-pill" title="Daily reminder alert time">
+                            ⏰ ${habit.reminderTime || '08:00'}
                           </span>
+                          ${habit.googleCalendarEnabled ? '<span class="habit-gcal-pill" title="Google Calendar alerts enabled">📅 G-Cal</span>' : ''}
+                          ${!isRetired ? `
+                            <span class="habit-target-counter">
+                              Month Progress: <strong>${completedCount}/${targetDays} days</strong> (${progressPct}%)
+                              ${isTargetReached ? ' <span class="target-star" title="Target Achieved! +Bonus XP">🎯 100%</span>' : ''}
+                            </span>
+                          ` : `
+                            <span class="habit-target-counter" style="color: var(--text-muted);">
+                              Historical data preserved in prior months.
+                            </span>
+                          `}
                         </div>
                       </div>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="habit-card-actions">
+                      ${isRetired ? `
+                        <button class="btn-reactivate-habit reactivate-habit-btn" data-habit-id="${habit.id}" title="Reactivate this habit to active tracking">
+                          <span>✨</span> Reactivate
+                        </button>
+                      ` : `
+                        <button class="btn-retire-habit retire-habit-btn" data-habit-id="${habit.id}" title="Retire habit starting from a specific month">
+                          <span>📦</span> Retire
+                        </button>
+                      `}
                       <button class="btn-icon edit-habit-btn" data-habit-id="${habit.id}" title="Edit Habit Settings">
                         ✏️
                       </button>
-                      <button class="btn-icon delete-habit-btn" data-habit-id="${habit.id}" title="Delete Habit">
+                      <button class="btn-icon delete-habit-btn" data-habit-id="${habit.id}" title="Delete Habit Completely">
                         🗑️
                       </button>
                     </div>
                   </div>
                 `;
-              }).join('')}
+              }).join('') : `
+                <div class="habits-empty-state" style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                  <span style="font-size: 2.2rem; display: block; margin-bottom: 8px;">${habitsManagerTab === 'retired' ? '📦' : '🌱'}</span>
+                  <h4>${habitsManagerTab === 'retired' ? 'No Retired Habits' : 'No Active Habits'}</h4>
+                  <p style="font-size: 0.85rem; margin-top: 4px;">
+                    ${habitsManagerTab === 'retired' 
+                      ? 'When you retire a habit, it will be stored here with all historical logs safely preserved.' 
+                      : 'Create a new habit on the left to start tracking.'}
+                  </p>
+                </div>
+              `}
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Edit Habit Modal -->
+    <!-- ============================================== -->
+    <!-- RETIRE HABIT MODAL (SELECT RETIREMENT MONTH)   -->
+    <!-- ============================================== -->
+    <div id="retire-habit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card habit-retire-modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.5rem;">📦</span>
+              <h3 class="modal-title" id="retire-modal-title">Retire Habit</h3>
+            </div>
+            <p class="modal-subtitle">Archive habit from active tracking starting from your chosen month</p>
+          </div>
+          <button class="modal-close-btn" id="close-retire-modal-btn">&times;</button>
+        </div>
+
+        <div class="modal-body" id="retire-modal-body">
+          <!-- Dynamic Content Rendered by openRetireHabitModal -->
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-ghost" id="cancel-retire-modal-btn">Cancel</button>
+          <button class="btn-primary" id="confirm-retire-btn" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); border-color: #8b5cf6;">
+            <span>📦</span> Confirm Retirement
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- EDIT HABIT MODAL                               -->
+    <!-- ============================================== -->
     <div id="edit-habit-modal" class="modal-backdrop hidden">
       <div class="modal-window habit-edit-modal-window">
         <div class="modal-header">
@@ -289,7 +435,7 @@ export function renderHabitsManagerView() {
             <span class="modal-icon">✏️</span>
             <div>
               <h3 class="modal-title" id="edit-modal-title">Edit Habit Configuration</h3>
-              <p class="modal-subtitle">Modify name, icon, category, and recurrence schedule.</p>
+              <p class="modal-subtitle">Modify name, icon, category, schedule, and retirement status.</p>
             </div>
           </div>
           <button class="modal-close-btn" id="close-edit-modal-btn">✕</button>
@@ -331,39 +477,20 @@ function attachHabitsManagerEvents(container) {
       const val = e.target.value.trim();
       if (val) {
         selectedNewIcon = val;
-        if (preview) preview.textContent = selectedNewIcon;
+        if (preview) preview.textContent = val;
       }
     });
   }
 
-// Helper to calculate XP preview based on frequency options
-function computeScheduleXPPreview(freqType, weeklyTarget = 4, specificDays = []) {
-  const dummyHabit = {
-    frequencyType: freqType,
-    weeklyTarget: weeklyTarget,
-    specificDays: specificDays
-  };
-  const targetDays = state.getHabitTargetDays(dummyHabit, state.currentYear, state.currentMonth);
-  const checkXP = state.getHabitCheckXP(dummyHabit, state.currentYear, state.currentMonth);
-  const masteryXP = state.getHabitMasteryBonusXP(dummyHabit, state.currentYear, state.currentMonth);
-  return { targetDays, checkXP, masteryXP };
-}
-
-  function refreshNewFormXPPreview() {
-    const freqMode = container.querySelector('input[name="new-frequency-type"]:checked')?.value || 'daily';
-    const weeklyTarget = parseInt(document.getElementById('new-habit-weekly-target')?.value || '4', 10);
-    const specificDays = [];
-    container.querySelectorAll('#new-specific-days-wrap .weekday-toggle-pill.active').forEach(p => {
-      specificDays.push(parseInt(p.getAttribute('data-day-index'), 10));
+  // Active / Retired Tabs
+  container.querySelectorAll('.habits-tab-chip').forEach(tab => {
+    tab.addEventListener('click', () => {
+      habitsManagerTab = tab.getAttribute('data-tab') || 'active';
+      renderHabitsManagerView();
     });
-    const { targetDays, checkXP, masteryXP } = computeScheduleXPPreview(freqMode, weeklyTarget, specificDays);
-    const previewEl = document.getElementById('new-xp-preview-text');
-    if (previewEl) {
-      previewEl.innerHTML = `<strong>+${checkXP} XP</strong> per check · <strong>+${masteryXP} XP</strong> Monthly Target Mastery Bonus (${targetDays} target days)`;
-    }
-  }
+  });
 
-  // Frequency Type Radio Toggle
+  // Frequency Radios
   const freqRadios = container.querySelectorAll('input[name="new-frequency-type"]');
   const weeklyTargetWrap = document.getElementById('new-weekly-target-wrap');
   const specificDaysWrap = document.getElementById('new-specific-days-wrap');
@@ -435,7 +562,9 @@ function computeScheduleXPPreview(freqType, weeklyTarget = 4, specificDays = [])
         category,
         frequencyType: freqMode,
         weeklyTarget: freqMode === 'weekly_target' ? weeklyTarget : 7,
-        specificDays
+        specificDays,
+        reminderTime: document.getElementById('new-habit-reminder-time')?.value || '08:00',
+        googleCalendarEnabled: Boolean(document.getElementById('new-habit-gcal-enabled')?.checked)
       });
 
       // Reset form
@@ -458,10 +587,28 @@ function computeScheduleXPPreview(freqType, weeklyTarget = 4, specificDays = [])
   container.querySelectorAll('.move-down-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.getAttribute('data-index'), 10);
-      if (idx < state.getHabits().length - 1) {
+      if (idx < state.getActiveHabits().length - 1) {
         state.reorderHabit(idx, idx + 1);
         renderHabitsManagerView();
       }
+    });
+  });
+
+  // Retire Habit Button Click
+  container.querySelectorAll('.retire-habit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const habitId = btn.getAttribute('data-habit-id');
+      openRetireHabitModal(habitId);
+    });
+  });
+
+  // Reactivate Habit Button Click
+  container.querySelectorAll('.reactivate-habit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const habitId = btn.getAttribute('data-habit-id');
+      state.reactivateHabit(habitId);
+      habitsManagerTab = 'active';
+      renderHabitsManagerView();
     });
   });
 
@@ -483,15 +630,15 @@ function computeScheduleXPPreview(freqType, weeklyTarget = 4, specificDays = [])
       const confirmed = await showConfirmDialog({
         title: 'Delete Habit',
         badge: 'Permanent Deletion',
-        message: `Are you sure you want to delete <strong>"${escapeHtml(habit.name)}"</strong> from your habit tracking? This will remove it from all months and metrics.`,
+        message: `Are you sure you want to delete <strong>"${escapeHtml(habit.name)}"</strong>? If you only want to stop tracking it going forward, use <strong>Retire Habit</strong> instead so historical data is kept.`,
         item: {
           name: habit.name,
           icon: habit.icon,
           category: habit.category,
           frequency: habit.frequencyType === 'daily' ? 'Daily (7x/wk)' : (habit.frequencyType === 'weekly_target' ? `Weekly Target (${habit.weeklyTarget || 5}x/wk)` : 'Specific Days')
         },
-        warningNote: 'This action is irreversible. All tracking streaks, logs, and historical data for this habit across all 12 months will be permanently erased.',
-        confirmText: 'Delete Habit',
+        warningNote: 'Deleting will permanently erase all past checkmarks, streaks, and logs for this habit across all 12 months.',
+        confirmText: 'Delete Permanently',
         cancelText: 'Keep Habit',
         confirmIcon: '🗑️',
         variant: 'danger',
@@ -516,6 +663,84 @@ function computeScheduleXPPreview(freqType, weeklyTarget = 4, specificDays = [])
   if (cancelEditBtn && editModal) {
     cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden'));
   }
+
+  // Close Retire Modal Handlers
+  const closeRetireBtn = document.getElementById('close-retire-modal-btn');
+  const cancelRetireBtn = document.getElementById('cancel-retire-modal-btn');
+  const retireModal = document.getElementById('retire-habit-modal');
+
+  if (closeRetireBtn && retireModal) {
+    closeRetireBtn.addEventListener('click', () => retireModal.classList.add('hidden'));
+  }
+  if (cancelRetireBtn && retireModal) {
+    cancelRetireBtn.addEventListener('click', () => retireModal.classList.add('hidden'));
+  }
+}
+
+// --------------------------------------------------------------------------
+// RETIRE HABIT MODAL
+// --------------------------------------------------------------------------
+function openRetireHabitModal(habitId) {
+  const habit = state.getHabit(habitId);
+  const modal = document.getElementById('retire-habit-modal');
+  const body = document.getElementById('retire-modal-body');
+  const confirmBtn = document.getElementById('confirm-retire-btn');
+  if (!habit || !modal || !body || !confirmBtn) return;
+
+  retiringHabitId = habitId;
+  const monthOptions = generateRetirementMonthOptions();
+
+  body.innerHTML = `
+    <div class="retire-habit-body-wrap">
+      <div class="retire-habit-profile-card">
+        <span class="retire-habit-avatar">${habit.icon || '⭐'}</span>
+        <div class="retire-habit-details">
+          <h4 class="retire-habit-title">${escapeHtml(habit.name)}</h4>
+          <span class="retire-habit-category">${escapeHtml(habit.category || 'General')} · ${escapeHtml(state.getHabitScheduleLabel(habit))}</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 14px;">
+        <label class="form-label" for="retire-month-select">
+          📅 Select Month From Which This Habit Will Be Retired:
+        </label>
+        <div class="select-wrapper">
+          <select id="retire-month-select" class="form-select" style="font-weight: 600;">
+            ${monthOptions.map(opt => `
+              <option value="${opt.key}" ${opt.isSelected ? 'selected' : ''}>${opt.label}</option>
+            `).join('')}
+          </select>
+          <div class="select-arrow">▾</div>
+        </div>
+      </div>
+
+      <div class="retire-info-callout">
+        <div class="retire-callout-row">
+          <span class="callout-icon">✅</span>
+          <span><strong>Historical Data Preserved:</strong> All checkmarks, streak logs, and metrics before the selected month will remain completely safe in past months.</span>
+        </div>
+        <div class="retire-callout-row">
+          <span class="callout-icon">📦</span>
+          <span><strong>Future Clutter Removed:</strong> Starting from the selected month, this habit will not appear in the Monthly Grid or penalize streaks.</span>
+        </div>
+        <div class="retire-callout-row">
+          <span class="callout-icon">🔄</span>
+          <span><strong>Reactivatable Anytime:</strong> You can restore this habit back to active tracking whenever you like.</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+
+  confirmBtn.onclick = () => {
+    const monthSelect = document.getElementById('retire-month-select');
+    const selectedMonth = monthSelect ? monthSelect.value : `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+    
+    state.retireHabit(retiringHabitId, selectedMonth);
+    modal.classList.add('hidden');
+    renderHabitsManagerView();
+  };
 }
 
 // --------------------------------------------------------------------------
@@ -530,6 +755,9 @@ function openEditHabitModal(habitId) {
 
   editingHabitId = habitId;
   selectedEditIcon = habit.icon || '⭐';
+
+  const isRetired = Boolean(habit.retiredMonth);
+  const monthOptions = generateRetirementMonthOptions(habit.retiredMonth);
 
   body.innerHTML = `
     <div class="edit-habit-form-grid">
@@ -633,6 +861,52 @@ function openEditHabitModal(habitId) {
         </div>
       </div>
 
+      <!-- Reminder Time & Google Calendar Alerts in Edit Modal -->
+      <div class="form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="edit-habit-reminder-time">⏰ Reminder Time</label>
+          <input type="time" id="edit-habit-reminder-time" class="form-input" value="${habit.reminderTime || '08:00'}" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">📅 G-Cal Alert</label>
+          <div class="gcal-toggle-inline" style="display: flex; align-items: center; gap: 8px; height: 38px;">
+            <label class="gcal-switch">
+              <input type="checkbox" id="edit-habit-gcal-enabled" ${habit.googleCalendarEnabled ? 'checked' : ''} />
+              <span class="gcal-slider"></span>
+            </label>
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Enable Sync</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Retirement Status Configuration -->
+      <div class="form-group" style="padding: 12px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+        <label class="form-label" style="display: flex; align-items: center; justify-content: space-between;">
+          <span>📦 Habit Lifecycle & Retirement Status</span>
+          <span style="font-size: 0.72rem; font-weight: 700; color: ${isRetired ? '#ec4899' : '#10b981'};">
+            ${isRetired ? '● Retired' : '● Active'}
+          </span>
+        </label>
+        
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+          <label class="gcal-switch">
+            <input type="checkbox" id="edit-habit-retired-toggle" ${isRetired ? 'checked' : ''} />
+            <span class="gcal-slider"></span>
+          </label>
+          <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">
+            Retire this habit starting from:
+          </span>
+        </div>
+
+        <div id="edit-retired-month-select-wrap" style="margin-top: 8px; ${isRetired ? '' : 'display: none;'}">
+          <select id="edit-retired-month-select" class="form-select" style="font-size: 0.82rem; padding: 6px 10px;">
+            ${monthOptions.map(opt => `
+              <option value="${opt.key}" ${opt.isSelected ? 'selected' : ''}>${opt.label}</option>
+            `).join('')}
+          </select>
+        </div>
+      </div>
+
       <!-- Dynamic XP Commitment Preview in Edit Modal -->
       <div class="frequency-xp-preview" id="edit-xp-preview-box">
         <div class="xp-preview-header">
@@ -665,26 +939,21 @@ function openEditHabitModal(habitId) {
       const val = e.target.value.trim();
       if (val) {
         selectedEditIcon = val;
-        if (editPreview) editPreview.textContent = selectedEditIcon;
+        if (editPreview) editPreview.textContent = val;
       }
     });
   }
 
-  function refreshEditFormXPPreview() {
-    const freqMode = body.querySelector('input[name="edit-frequency-type"]:checked')?.value || 'daily';
-    const weeklyTarget = parseInt(document.getElementById('edit-habit-weekly-target')?.value || '4', 10);
-    const specificDays = [];
-    body.querySelectorAll('#edit-specific-days-wrap .edit-weekday-pill.active').forEach(p => {
-      specificDays.push(parseInt(p.getAttribute('data-day-index'), 10));
+  // Edit Retired toggle
+  const retiredToggle = document.getElementById('edit-habit-retired-toggle');
+  const retiredMonthWrap = document.getElementById('edit-retired-month-select-wrap');
+  if (retiredToggle && retiredMonthWrap) {
+    retiredToggle.addEventListener('change', (e) => {
+      retiredMonthWrap.style.display = e.target.checked ? 'block' : 'none';
     });
-    const { targetDays, checkXP, masteryXP } = computeScheduleXPPreview(freqMode, weeklyTarget, specificDays);
-    const previewEl = document.getElementById('edit-xp-preview-text');
-    if (previewEl) {
-      previewEl.innerHTML = `<strong>+${checkXP} XP</strong> per check · <strong>+${masteryXP} XP</strong> Monthly Target Mastery Bonus (${targetDays} target days)`;
-    }
   }
 
-  // Attach frequency radio toggle in edit modal
+  // Edit frequency mode switching
   const editRadios = body.querySelectorAll('input[name="edit-frequency-type"]');
   const editWeeklyWrap = document.getElementById('edit-weekly-target-wrap');
   const editSpecificWrap = document.getElementById('edit-specific-days-wrap');
@@ -748,13 +1017,24 @@ function openEditHabitModal(habitId) {
       }
     }
 
+    const reminderTimeVal = document.getElementById('edit-habit-reminder-time')?.value || '08:00';
+    const gcalEnabledVal = Boolean(document.getElementById('edit-habit-gcal-enabled')?.checked);
+    
+    const isRetiredChecked = Boolean(document.getElementById('edit-habit-retired-toggle')?.checked);
+    const retiredMonthVal = isRetiredChecked 
+      ? (document.getElementById('edit-retired-month-select')?.value || `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`)
+      : null;
+
     state.updateHabit(editingHabitId, {
       name,
       icon: selectedEditIcon,
       category: catSelect ? catSelect.value : 'General',
       frequencyType: freqMode,
       weeklyTarget: freqMode === 'weekly_target' ? parseInt(weeklyTargetInput.value, 10) : 7,
-      specificDays
+      specificDays,
+      reminderTime: reminderTimeVal,
+      googleCalendarEnabled: gcalEnabledVal,
+      retiredMonth: retiredMonthVal
     });
 
     modal.classList.add('hidden');
@@ -762,3 +1042,52 @@ function openEditHabitModal(habitId) {
   };
 }
 
+function refreshNewFormXPPreview() {
+  const container = document.getElementById('habits-tab');
+  if (!container) return;
+
+  const freqMode = container.querySelector('input[name="new-frequency-type"]:checked')?.value || 'daily';
+  const weeklyTarget = parseInt(document.getElementById('new-habit-weekly-target')?.value, 10) || 4;
+  const specificDaysCount = container.querySelectorAll('#new-specific-days-wrap .weekday-toggle-pill.active').length;
+  const totalDays = getDaysInMonth(state.currentYear, state.currentMonth);
+
+  let targetDays = totalDays;
+  if (freqMode === 'weekly_target') {
+    targetDays = Math.round((weeklyTarget / 7) * totalDays);
+  } else if (freqMode === 'specific_days') {
+    targetDays = Math.round((specificDaysCount / 7) * totalDays);
+  }
+
+  const checkXP = Math.max(3, 3 + Math.round((targetDays / totalDays) * 7));
+  const masteryXP = targetDays * 2;
+
+  const previewText = document.getElementById('new-xp-preview-text');
+  if (previewText) {
+    previewText.innerHTML = `<strong>+${checkXP} XP</strong> per check · <strong>+${masteryXP} XP</strong> Monthly Target Mastery Bonus (${targetDays} target days)`;
+  }
+}
+
+function refreshEditFormXPPreview() {
+  const body = document.getElementById('edit-modal-body');
+  if (!body) return;
+
+  const freqMode = body.querySelector('input[name="edit-frequency-type"]:checked')?.value || 'daily';
+  const weeklyTarget = parseInt(document.getElementById('edit-habit-weekly-target')?.value, 10) || 4;
+  const specificDaysCount = body.querySelectorAll('.edit-weekday-pill.active').length;
+  const totalDays = getDaysInMonth(state.currentYear, state.currentMonth);
+
+  let targetDays = totalDays;
+  if (freqMode === 'weekly_target') {
+    targetDays = Math.round((weeklyTarget / 7) * totalDays);
+  } else if (freqMode === 'specific_days') {
+    targetDays = Math.round((specificDaysCount / 7) * totalDays);
+  }
+
+  const checkXP = Math.max(3, 3 + Math.round((targetDays / totalDays) * 7));
+  const masteryXP = targetDays * 2;
+
+  const previewText = document.getElementById('edit-xp-preview-text');
+  if (previewText) {
+    previewText.innerHTML = `<strong>+${checkXP} XP</strong> per check · <strong>+${masteryXP} XP</strong> Monthly Target Mastery Bonus (${targetDays} target days)`;
+  }
+}

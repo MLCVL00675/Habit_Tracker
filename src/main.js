@@ -10,6 +10,7 @@ import { renderGamificationView } from './js/components/gamification.js';
 import { renderHabitsManagerView } from './js/components/habitsManager.js';
 import { showConfirmDialog } from './js/components/confirmModal.js';
 import { initAuthUI, showAuthModal, updateHeaderUserPill } from './js/components/authModal.js';
+import { initGoogleCalendarModal, showGoogleCalendarModal, updateGridSyncButtonBadge } from './js/components/calendarModal.js';
 
 // Active Tab tracker
 let activeTab = 'grid-tab';
@@ -29,10 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Initialize Auth & Profile UI
   initAuthUI();
 
+  // 4. Initialize Google Calendar Integration UI
+  initGoogleCalendarModal();
+
   // Subscribe UI renders to state changes
   state.subscribe(() => {
     updateHeaderMonthInfo();
     updateHeaderUserPill();
+    updateGridSyncButtonBadge();
     renderActiveView();
   });
 
@@ -47,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial Full Render
   updateHeaderMonthInfo();
   updateHeaderUserPill();
+  updateGridSyncButtonBadge();
   renderAllViews();
 
   // Lifecycle Auto-Save Hooks (ensures data is flushed to localStorage on tab close, reload, or backgrounding)
@@ -253,6 +259,14 @@ function initHeaderControls() {
           showToast(`Focused on Today (${MONTH_NAMES[targetMonth - 1]} ${targetDay})!`, '⚡');
         }
       }, 120);
+    });
+  }
+
+  // Google Calendar Sync Button on top of Habit Grid
+  const syncGcalBtn = document.getElementById('sync-google-calendar-btn');
+  if (syncGcalBtn) {
+    syncGcalBtn.addEventListener('click', () => {
+      showGoogleCalendarModal();
     });
   }
 }

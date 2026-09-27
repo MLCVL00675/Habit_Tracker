@@ -16,6 +16,7 @@ import {
   triggerConfetti, 
   escapeHtml 
 } from '../utils.js';
+import { googleCalendar } from '../googleCalendar.js';
 
 let streaksFilter = 'all';
 let streaksSort = 'streak-desc';
@@ -24,7 +25,9 @@ export function renderStreaksView() {
   const container = document.getElementById('streaks-tab');
   if (!container) return;
 
-  const habits = state.getHabits();
+  const activeHabits = state.getActiveHabits(state.currentYear, state.currentMonth);
+  const retiredHabits = state.getRetiredHabits();
+  const habits = (streaksFilter === 'retired') ? retiredHabits : activeHabits;
   const monthData = state.getCurrentMonthData();
   const totalDays = getDaysInMonth(state.currentYear, state.currentMonth);
   const today = new Date().getDate();
@@ -215,6 +218,39 @@ export function renderStreaksView() {
           </div>
         </div>
 
+        <!-- Google Calendar Alerts & Daily Reminder Panel -->
+        <div class="streak-gcal-bar ${habit.googleCalendarEnabled ? 'gcal-active' : ''}">
+          <div class="streak-gcal-left">
+            <div class="streak-gcal-toggle-wrap" title="Enable or disable Google Calendar alerts for this habit">
+              <label class="gcal-switch">
+                <input type="checkbox" class="streak-gcal-toggle" data-habit-id="${habit.id}" ${habit.googleCalendarEnabled ? 'checked' : ''} />
+                <span class="gcal-slider"></span>
+              </label>
+              <span class="gcal-toggle-label">
+                <span class="gcal-icon-mini">📅</span>
+                <span class="gcal-text-main">G-Cal Alert</span>
+              </span>
+            </div>
+            
+            <div class="streak-reminder-time-wrap" title="Set daily reminder alert time for Google Calendar">
+              <span class="streak-reminder-clock">⏰</span>
+              <input type="time" class="streak-time-input" data-habit-id="${habit.id}" value="${habit.reminderTime || '08:00'}" />
+            </div>
+          </div>
+
+          <div class="streak-gcal-right">
+            <button class="btn-streak-gcal-sync ${habit.lastSyncedAt ? 'is-synced' : ''}" data-habit-id="${habit.id}" title="Sync this habit alert to Google Calendar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" class="gcal-mini-svg">
+                <rect x="3" y="4" width="18" height="18" rx="3" fill="#4285F4" />
+                <path d="M3 9H21" stroke="#ffffff" stroke-width="2"/>
+                <path d="M8 2V5" stroke="#ffffff" stroke-width="2"/>
+                <path d="M16 2V5" stroke="#ffffff" stroke-width="2"/>
+              </svg>
+              <span>${habit.lastSyncedAt ? 'Synced ✓' : 'Add to G-Cal'}</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Card Action Footer -->
         <div class="streak-card-footer">
           <span class="streak-foot-note">
@@ -284,10 +320,11 @@ export function renderStreaksView() {
       <!-- Controls & Filter Toolbar -->
       <div class="streaks-controls-bar">
         <div class="streaks-filter-group">
-          <button class="streaks-filter-btn ${streaksFilter === 'all' ? 'active' : ''}" data-filter="all">All Habits (${habits.length})</button>
+          <button class="streaks-filter-btn ${streaksFilter === 'all' ? 'active' : ''}" data-filter="all">All Active (${activeHabits.length})</button>
           <button class="streaks-filter-btn ${streaksFilter === 'active' ? 'active' : ''}" data-filter="active">Active Streaks (${activeStreaksCount})</button>
           <button class="streaks-filter-btn ${streaksFilter === 'flame' ? 'active' : ''}" data-filter="flame">🔥 7+ Days Flame</button>
           <button class="streaks-filter-btn ${streaksFilter === 'needs-focus' ? 'active' : ''}" data-filter="needs-focus">❄️ Cold (0d)</button>
+          ${retiredHabits.length > 0 ? `<button class="streaks-filter-btn ${streaksFilter === 'retired' ? 'active' : ''}" data-filter="retired">📦 Retired (${retiredHabits.length})</button>` : ''}
         </div>
 
         <div class="streaks-sort-wrap">
@@ -354,6 +391,55 @@ function attachStreaksListeners(container, today) {
       const habitId = dot.getAttribute('data-habit-id');
       if (day && habitId) {
         state.toggleHabit(day, habitId);
+        renderStreaksView();
+      }
+    });
+  });
+
+  // Google Calendar Toggle switches in streak cards
+  container.querySelectorAll('.streak-gcal-toggle').forEach(toggle => {
+    toggle.addEventListener('change', (e) => {
+      const habitId = toggle.getAttribute('data-habit-id');
+      const checked = e.target.checked;
+      state.setHabitGoogleCalendarEnabled(habitId, checked);
+      renderStreaksView();
+    });
+  });
+
+  // Google Calendar Reminder Time inputs in streak cards
+  container.querySelectorAll('.streak-time-input').forEach(inp => {
+    inp.addEventListener('change', (e) => {
+      const habitId = inp.getAttribute('data-habit-id');
+      const val = e.target.value;
+      if (val) {
+        state.setHabitReminderTime(habitId, val);
+        showToast(`Reminder alert set to ${val}`, '⏰', 2000);
+      }
+    });
+  });
+
+  // Google Calendar Sync button in streak cards
+  container.querySelectorAll('.btn-streak-gcal-sync').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const habitId = btn.getAttribute('data-habit-id');
+      const habit = state.getHabit(habitId);
+      if (!habit) return;
+
+      // Automatically enable G-Cal for this habit if it was off
+      if (!habit.googleCalendarEnabled) {
+        state.setHabitGoogleCalendarEnabled(habitId, true);
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<span>⏳</span> Syncing...`;
+
+      try {
+        await googleCalendar.syncHabitToGoogleCalendar(habit);
+      } catch (err) {
+        showToast('Sync error: ' + err.message, '⚠️');
+      } finally {
+        btn.disabled = false;
         renderStreaksView();
       }
     });

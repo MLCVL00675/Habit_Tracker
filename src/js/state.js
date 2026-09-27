@@ -13,20 +13,20 @@ import {
 import { authManager } from './auth.js';
 import { db } from './db.js';
 
-// Default Initial 12 Bullet Journal Habits with Frequency Configurations
+// Default Initial 12 Bullet Journal Habits with Frequency Configurations & Google Calendar Alerts
 export const DEFAULT_HABITS = [
-  { id: 'mediaAffirm', name: 'Meditation + Affirm', icon: '🧘', category: 'Mindset', frequencyType: 'daily', weeklyTarget: 7, specificDays: [] },
-  { id: 'water3L', name: 'Water 3L', icon: '💧', category: 'Health', frequencyType: 'daily', weeklyTarget: 7, specificDays: [] },
-  { id: 'nomaf', name: 'NOMAF', icon: '⚡', category: 'Discipline', frequencyType: 'specific_days', weeklyTarget: 6, specificDays: [1, 2, 3, 4, 5, 6] },
-  { id: 'readBook', name: 'Read book', icon: '📖', category: 'Growth', frequencyType: 'daily', weeklyTarget: 7, specificDays: [] },
-  { id: 'vitaminD', name: 'Vitamin D Tablet', icon: '☀️', category: 'Health', frequencyType: 'specific_days', weeklyTarget: 1, specificDays: [0] },
-  { id: 'vitTabs', name: 'Vitamin tablets', icon: '💊', category: 'Health', frequencyType: 'specific_days', weeklyTarget: 3, specificDays: [2, 4, 6] },
-  { id: 'gripper', name: 'Latitha Sahasra...', icon: '🙏', category: 'Spiritual', frequencyType: 'daily', weeklyTarget: 7, specificDays: [] },
-  { id: 'sakhaRahasya', name: 'Gripper', icon: '✊', category: 'Physical', frequencyType: 'daily', weeklyTarget: 7, specificDays: [] },
-  { id: 'nextDayTodo', name: 'Next day todo', icon: '📝', category: 'Planning', frequencyType: 'daily', weeklyTarget: 7, specificDays: [] },
-  { id: 'skinCare', name: 'Skin care', icon: '✨', category: 'Hygiene', frequencyType: 'daily', weeklyTarget: 7, specificDays: [] },
-  { id: 'workout10k', name: 'Workout / 10k', icon: '🏋️', category: 'Physical', frequencyType: 'weekly_target', weeklyTarget: 4, specificDays: [] },
-  { id: 'pray', name: 'Pray', icon: '🙏', category: 'Spiritual', frequencyType: 'daily', weeklyTarget: 7, specificDays: [] }
+  { id: 'mediaAffirm', name: 'Meditation + Affirm', icon: '🧘', category: 'Mindset', frequencyType: 'daily', weeklyTarget: 7, specificDays: [], reminderTime: '06:30', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'water3L', name: 'Water 3L', icon: '💧', category: 'Health', frequencyType: 'daily', weeklyTarget: 7, specificDays: [], reminderTime: '08:00', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'nomaf', name: 'NOMAF', icon: '⚡', category: 'Discipline', frequencyType: 'specific_days', weeklyTarget: 6, specificDays: [1, 2, 3, 4, 5, 6], reminderTime: '09:00', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'readBook', name: 'Read book', icon: '📖', category: 'Growth', frequencyType: 'daily', weeklyTarget: 7, specificDays: [], reminderTime: '21:30', reminderMinutesBefore: 15, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'vitaminD', name: 'Vitamin D Tablet', icon: '☀️', category: 'Health', frequencyType: 'specific_days', weeklyTarget: 1, specificDays: [0], reminderTime: '08:30', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'vitTabs', name: 'Vitamin tablets', icon: '💊', category: 'Health', frequencyType: 'specific_days', weeklyTarget: 3, specificDays: [2, 4, 6], reminderTime: '13:00', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'gripper', name: 'Latitha Sahasra...', icon: '🙏', category: 'Spiritual', frequencyType: 'daily', weeklyTarget: 7, specificDays: [], reminderTime: '18:00', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'sakhaRahasya', name: 'Gripper', icon: '✊', category: 'Physical', frequencyType: 'daily', weeklyTarget: 7, specificDays: [], reminderTime: '18:30', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'nextDayTodo', name: 'Next day todo', icon: '📝', category: 'Planning', frequencyType: 'daily', weeklyTarget: 7, specificDays: [], reminderTime: '22:00', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'skinCare', name: 'Skin care', icon: '✨', category: 'Hygiene', frequencyType: 'daily', weeklyTarget: 7, specificDays: [], reminderTime: '22:30', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'workout10k', name: 'Workout / 10k', icon: '🏋️', category: 'Physical', frequencyType: 'weekly_target', weeklyTarget: 4, specificDays: [], reminderTime: '17:30', reminderMinutesBefore: 15, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null },
+  { id: 'pray', name: 'Pray', icon: '🙏', category: 'Spiritual', frequencyType: 'daily', weeklyTarget: 7, specificDays: [], reminderTime: '07:00', reminderMinutesBefore: 10, googleCalendarEnabled: false, lastSyncedAt: null, calendarEventId: null }
 ];
 
 export const HABIT_DEFINITIONS = DEFAULT_HABITS;
@@ -309,10 +309,64 @@ class AppState {
   }
 
   // --------------------------------------------------------------------------
-  // HABITS MANAGEMENT (CRUD & FREQUENCY)
+  // HABITS MANAGEMENT (CRUD, FREQUENCY & RETIREMENT)
   // --------------------------------------------------------------------------
-  getHabits() {
+  getHabits(year = null, month = null) {
+    if (year !== null && month !== null) {
+      return this.getActiveHabits(year, month);
+    }
     return this.habits;
+  }
+
+  getAllHabits() {
+    return this.habits;
+  }
+
+  getActiveHabits(year = this.currentYear, month = this.currentMonth) {
+    return this.habits.filter(h => this.isHabitActiveInMonth(h, year, month));
+  }
+
+  getRetiredHabits() {
+    return this.habits.filter(h => Boolean(h.retiredMonth));
+  }
+
+  isHabitRetiredInMonth(habit, year = this.currentYear, month = this.currentMonth) {
+    if (!habit || !habit.retiredMonth) return false;
+    const [rYear, rMonth] = habit.retiredMonth.split('-').map(Number);
+    if (!rYear || !rMonth) return false;
+    if (year > rYear) return true;
+    if (year === rYear && month >= rMonth) return true;
+    return false;
+  }
+
+  isHabitActiveInMonth(habit, year = this.currentYear, month = this.currentMonth) {
+    return !this.isHabitRetiredInMonth(habit, year, month);
+  }
+
+  retireHabit(habitId, retiredMonth = null) {
+    const habit = this.getHabit(habitId);
+    if (!habit) return false;
+    const targetMonthKey = retiredMonth || `${this.currentYear}-${String(this.currentMonth).padStart(2, '0')}`;
+    habit.retiredMonth = targetMonthKey;
+    this.sanitizeUnscheduledDays();
+    this.autoMarkPastUnloggedHabits();
+    this.saveToStorage();
+    this.notify();
+    const [y, m] = targetMonthKey.split('-').map(Number);
+    showToast(`Retired "${habit.name}" starting from ${MONTH_NAMES[m - 1]} ${y}`, '📦');
+    return true;
+  }
+
+  reactivateHabit(habitId) {
+    const habit = this.getHabit(habitId);
+    if (!habit) return false;
+    habit.retiredMonth = null;
+    this.sanitizeUnscheduledDays();
+    this.autoMarkPastUnloggedHabits();
+    this.saveToStorage();
+    this.notify();
+    showToast(`Reactivated "${habit.name}" as an active habit!`, '✨');
+    return true;
   }
 
   getHabit(id) {
@@ -330,6 +384,12 @@ class AppState {
       frequencyType: habitData.frequencyType || 'daily', // 'daily' | 'weekly_target' | 'specific_days'
       weeklyTarget: parseInt(habitData.weeklyTarget, 10) || 7,
       specificDays: Array.isArray(habitData.specificDays) ? habitData.specificDays : [],
+      reminderTime: habitData.reminderTime || '08:00',
+      reminderMinutesBefore: habitData.reminderMinutesBefore !== undefined ? parseInt(habitData.reminderMinutesBefore, 10) : 10,
+      googleCalendarEnabled: Boolean(habitData.googleCalendarEnabled),
+      lastSyncedAt: habitData.lastSyncedAt || null,
+      calendarEventId: habitData.calendarEventId || null,
+      retiredMonth: habitData.retiredMonth || null,
       createdAt: habitData.createdAt || now.toISOString()
     };
 
@@ -364,7 +424,13 @@ class AppState {
       ...updatedFields,
       name: (updatedFields.name !== undefined ? updatedFields.name : this.habits[idx].name).trim(),
       weeklyTarget: updatedFields.weeklyTarget !== undefined ? parseInt(updatedFields.weeklyTarget, 10) : this.habits[idx].weeklyTarget,
-      specificDays: Array.isArray(updatedFields.specificDays) ? updatedFields.specificDays : this.habits[idx].specificDays
+      specificDays: Array.isArray(updatedFields.specificDays) ? updatedFields.specificDays : this.habits[idx].specificDays,
+      reminderTime: updatedFields.reminderTime !== undefined ? updatedFields.reminderTime : (this.habits[idx].reminderTime || '08:00'),
+      reminderMinutesBefore: updatedFields.reminderMinutesBefore !== undefined ? parseInt(updatedFields.reminderMinutesBefore, 10) : (this.habits[idx].reminderMinutesBefore || 10),
+      googleCalendarEnabled: updatedFields.googleCalendarEnabled !== undefined ? Boolean(updatedFields.googleCalendarEnabled) : Boolean(this.habits[idx].googleCalendarEnabled),
+      lastSyncedAt: updatedFields.lastSyncedAt !== undefined ? updatedFields.lastSyncedAt : this.habits[idx].lastSyncedAt,
+      calendarEventId: updatedFields.calendarEventId !== undefined ? updatedFields.calendarEventId : this.habits[idx].calendarEventId,
+      retiredMonth: updatedFields.retiredMonth !== undefined ? updatedFields.retiredMonth : this.habits[idx].retiredMonth
     };
 
     this.sanitizeUnscheduledDays();
@@ -373,6 +439,33 @@ class AppState {
     this.notify();
     showToast(`Updated "${this.habits[idx].name}"`, '✏️');
     return true;
+  }
+
+  setHabitReminderTime(id, reminderTime) {
+    const habit = this.getHabit(id);
+    if (!habit) return false;
+    habit.reminderTime = reminderTime || '08:00';
+    this.saveToStorage();
+    this.notify();
+    return true;
+  }
+
+  setHabitGoogleCalendarEnabled(id, enabled) {
+    const habit = this.getHabit(id);
+    if (!habit) return false;
+    habit.googleCalendarEnabled = Boolean(enabled);
+    this.saveToStorage();
+    this.notify();
+    if (enabled) {
+      showToast(`Google Calendar alerts enabled for "${habit.name}" (at ${habit.reminderTime || '08:00'})`, '📅');
+    } else {
+      showToast(`Google Calendar alerts disabled for "${habit.name}"`, 'ℹ️');
+    }
+    return true;
+  }
+
+  getGoogleCalendarEnabledHabits() {
+    return this.habits.filter(h => Boolean(h.googleCalendarEnabled));
   }
 
   // Auto-mark scheduled unlogged habits from yesterday and earlier past days as 'missed'
@@ -501,6 +594,7 @@ class AppState {
   // Check if habit is scheduled for a specific day
   isHabitScheduledForDay(habit, year, month, day) {
     if (!habit) return false;
+    if (this.isHabitRetiredInMonth(habit, year, month)) return false;
     if (isDayBeforeHabitCreated(habit, year, month, day)) return false;
     if (habit.frequencyType === 'daily') return true;
     if (habit.frequencyType === 'weekly_target') return true; // Flexible daily completion toward target
@@ -1102,7 +1196,15 @@ class AppState {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed.habits) && parsed.habits.length > 0) {
-          this.habits = parsed.habits;
+          this.habits = parsed.habits.map(h => ({
+            reminderTime: '08:00',
+            reminderMinutesBefore: 10,
+            googleCalendarEnabled: false,
+            lastSyncedAt: null,
+            calendarEventId: null,
+            retiredMonth: null,
+            ...h
+          }));
         }
         if (parsed.allMonthsData && typeof parsed.allMonthsData === 'object') {
           this.allMonthsData = parsed.allMonthsData;
