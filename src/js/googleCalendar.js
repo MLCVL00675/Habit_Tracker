@@ -401,15 +401,15 @@ class GoogleCalendarManager {
     }
   }
 
-  // Sync ALL habits where googleCalendarEnabled is true
+  // Sync ALL active habits
   async syncAllEnabledHabits() {
     if (this.isSyncing) return { success: false, message: 'Sync already in progress' };
 
-    const enabledHabits = state.getHabits().filter(h => Boolean(h.googleCalendarEnabled));
+    const habitsToSync = state.getActiveHabits();
 
-    if (enabledHabits.length === 0) {
-      showToast('No habits have Google Calendar alerts enabled yet. Toggle G-Cal on your habits first!', '⚠️', 4000);
-      return { success: false, count: 0, message: 'No habits enabled' };
+    if (habitsToSync.length === 0) {
+      showToast('No active habits available to sync.', '⚠️', 4000);
+      return { success: false, count: 0, message: 'No habits available' };
     }
 
     this.isSyncing = true;
@@ -434,8 +434,8 @@ class GoogleCalendarManager {
       return {
         success: true,
         mode: 'unauthenticated',
-        count: enabledHabits.length,
-        habits: enabledHabits
+        count: habitsToSync.length,
+        habits: habitsToSync
       };
     }
 
@@ -443,9 +443,9 @@ class GoogleCalendarManager {
     let failCount = 0;
     const errors = [];
 
-    showToast(`Syncing ${enabledHabits.length} habits with Google Calendar...`, '🔄', 2000);
+    showToast(`Syncing ${habitsToSync.length} habits with Google Calendar...`, '🔄', 2000);
 
-    for (const habit of enabledHabits) {
+    for (const habit of habitsToSync) {
       const res = await this.syncHabitToGoogleCalendar(habit, authToken);
       if (res.success) {
         successCount++;
@@ -468,7 +468,7 @@ class GoogleCalendarManager {
 
     return {
       success: successCount > 0,
-      total: enabledHabits.length,
+      total: habitsToSync.length,
       successCount,
       failCount,
       errors
@@ -479,9 +479,9 @@ class GoogleCalendarManager {
   // ICALENDAR (.ICS) FILE GENERATION FOR DIRECT CALENDAR IMPORT
   // --------------------------------------------------------------------------
   exportHabitsToICS(habitsToExport = null) {
-    const habits = habitsToExport || state.getHabits().filter(h => Boolean(h.googleCalendarEnabled));
+    const habits = habitsToExport || state.getActiveHabits();
     if (!habits || habits.length === 0) {
-      showToast('No habits selected or enabled for Calendar Export.', '⚠️');
+      showToast('No active habits available for Calendar Export.', '⚠️');
       return;
     }
 

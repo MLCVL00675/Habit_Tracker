@@ -6443,6 +6443,13 @@ tbody tr:hover .sticky-col-2 {
   line-height: 1;
 }
 
+.streak-reminder-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
 .streak-time-input {
   background: transparent;
   border: none;

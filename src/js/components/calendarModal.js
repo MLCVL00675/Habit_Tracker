@@ -62,7 +62,7 @@ function createModalInDOM() {
             </div>
             <h3 id="gcal-modal-title" class="modal-title">Google Calendar Alerts & Reminders</h3>
           </div>
-          <span class="modal-subtitle">Schedule recurring daily popup alarms & sync enabled habits to Google Calendar</span>
+          <span class="modal-subtitle">Schedule recurring daily popup alarms & sync your habits to Google Calendar</span>
         </div>
         <button class="modal-close-btn" id="close-gcal-modal-btn" aria-label="Close modal">&times;</button>
       </div>
@@ -77,7 +77,7 @@ function createModalInDOM() {
           📥 Download .ICS File
         </button>
         <button class="btn-primary gcal-primary-sync-btn" id="gcal-sync-all-btn">
-          <span>🔄</span> Sync All Enabled Habits
+          <span>🔄</span> Sync All Habits to Google Calendar
         </button>
       </div>
     </div>
@@ -105,8 +105,8 @@ export function hideGoogleCalendarModal() {
 export function updateGridSyncButtonBadge() {
   const badge = document.getElementById('gcal-header-badge');
   const topBtn = document.getElementById('sync-google-calendar-btn');
-  const enabledHabits = state.getGoogleCalendarEnabledHabits();
-  const count = enabledHabits.length;
+  const activeHabits = state.getActiveHabits();
+  const count = activeHabits.length;
 
   if (badge) {
     badge.textContent = `${count}`;
@@ -114,10 +114,7 @@ export function updateGridSyncButtonBadge() {
   }
 
   if (topBtn) {
-    topBtn.setAttribute('title', count > 0 
-      ? `Google Calendar: ${count} habit(s) enabled for automatic alerts & sync`
-      : 'Google Calendar: Click to configure reminder alerts & sync habits'
-    );
+    topBtn.setAttribute('title', `Google Calendar: ${count} habit(s) available for automatic alerts & sync`);
   }
 }
 
@@ -125,8 +122,7 @@ function renderModalContent() {
   const container = document.getElementById('gcal-modal-body');
   if (!container) return;
 
-  const habits = state.getHabits();
-  const enabledHabits = state.getGoogleCalendarEnabledHabits();
+  const habits = state.getActiveHabits();
   const config = googleCalendar.config;
   const isAuth = googleCalendar.isAuthenticated();
   const isSyncing = googleCalendar.isSyncing;
@@ -136,7 +132,6 @@ function renderModalContent() {
     : 'Never';
 
   const habitRowsHtml = habits.map(h => {
-    const isEnabled = Boolean(h.googleCalendarEnabled);
     const timeVal = h.reminderTime || '08:00';
     const scheduleLabel = state.getHabitScheduleLabel(h);
     const lastSyncTime = h.lastSyncedAt 
@@ -144,12 +139,8 @@ function renderModalContent() {
       : null;
 
     return `
-      <div class="gcal-habit-item ${isEnabled ? 'item-enabled' : 'item-disabled'}" data-habit-id="${h.id}">
+      <div class="gcal-habit-item item-enabled" data-habit-id="${h.id}">
         <div class="gcal-habit-left">
-          <label class="gcal-custom-checkbox-wrap" title="${isEnabled ? 'Disable Calendar Alert' : 'Enable Calendar Alert'}">
-            <input type="checkbox" class="gcal-habit-toggle-check" data-habit-id="${h.id}" ${isEnabled ? 'checked' : ''} />
-            <span class="gcal-custom-checkbox-mark"></span>
-          </label>
           <div class="gcal-habit-icon">${h.icon || '⭐'}</div>
           <div class="gcal-habit-info">
             <div class="gcal-habit-name-line">
@@ -166,8 +157,8 @@ function renderModalContent() {
             <input type="time" class="gcal-time-input" data-habit-id="${h.id}" value="${timeVal}" />
           </div>
 
-          <button class="btn-gcal-single-sync" data-habit-id="${h.id}" title="Sync or open event in Google Calendar">
-            <span>📅</span> Add
+          <button class="btn-gcal-single-sync ${h.lastSyncedAt ? 'is-synced' : ''}" data-habit-id="${h.id}" title="Sync or open event in Google Calendar">
+            <span>📅</span> ${h.lastSyncedAt ? 'Synced ✓' : 'Add to G-Cal'}
           </button>
         </div>
       </div>
@@ -179,8 +170,8 @@ function renderModalContent() {
     <div class="gcal-status-hero">
       <div class="gcal-status-stats">
         <div class="gcal-stat-box">
-          <span class="gcal-stat-num">${enabledHabits.length} / ${habits.length}</span>
-          <span class="gcal-stat-label">Alerts Enabled</span>
+          <span class="gcal-stat-num">${habits.length}</span>
+          <span class="gcal-stat-label">Active Habits</span>
         </div>
         <div class="gcal-stat-box">
           <span class="gcal-stat-num">${isAuth ? 'Connected 🟢' : (config.clientId ? 'Ready 🟡' : 'Web / ICS ⚡')}</span>
@@ -193,19 +184,18 @@ function renderModalContent() {
       </div>
 
       <div class="gcal-status-info-note">
-        <span>💡 <strong>Tip:</strong> Habits with checkmarks will receive calendar alerts. Select the exact reminder time for each habit and click <strong>Sync All</strong> or <strong>Add</strong>.</span>
+        <span>💡 <strong>Tip:</strong> Choose the exact reminder time for each habit and click <strong>Add to G-Cal</strong> or <strong>Sync All</strong> to create recurring calendar alerts with alarms.</span>
       </div>
     </div>
 
     <!-- Quick Action Bar -->
     <div class="gcal-batch-controls-bar">
-      <div class="gcal-quick-toggle-group">
-        <button class="btn-ghost-sm" id="gcal-select-all-btn">Enable All (${habits.length})</button>
-        <button class="btn-ghost-sm" id="gcal-deselect-all-btn">Disable All</button>
-      </div>
+      <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">
+        Habit Reminder Schedule (${habits.length})
+      </span>
       <div class="gcal-web-direct-link-wrap">
         <button class="btn-ghost-sm" id="gcal-open-web-calendar-btn" title="Open Google Calendar in new tab">
-          ↗ Open Google Calendar
+          ↗ Open Google Calendar Web
         </button>
       </div>
     </div>
@@ -217,7 +207,11 @@ function renderModalContent() {
         <span>REMINDER TIME & ACTION</span>
       </div>
       <div class="gcal-habits-scroll-list">
-        ${habitRowsHtml}
+        ${habitRowsHtml.length > 0 ? habitRowsHtml : `
+          <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+            No active habits configured.
+          </div>
+        `}
       </div>
     </div>
 
@@ -240,7 +234,7 @@ function renderModalContent() {
           </div>
           <small class="form-help-text">
             Leave blank to use instant 1-click Google Calendar web links and .ICS downloads. 
-            Or enter your own OAuth 2.0 Web Client ID from Google Cloud Console for seamless in-app 1-click direct Calendar API sync.
+            Or enter your own OAuth 2.0 Web Client ID from Google Cloud Console for seamless in-app direct Calendar API sync.
           </small>
         </div>
 
@@ -299,12 +293,12 @@ function setupEventListeners() {
   const exportBtn = document.getElementById('gcal-export-ics-btn');
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
-      const enabledHabits = state.getGoogleCalendarEnabledHabits();
-      if (enabledHabits.length === 0) {
-        showToast('Please enable at least one habit for Google Calendar first!', '⚠️');
+      const activeHabits = state.getActiveHabits();
+      if (activeHabits.length === 0) {
+        showToast('No active habits available for Calendar Export.', '⚠️');
         return;
       }
-      googleCalendar.exportHabitsToICS(enabledHabits);
+      googleCalendar.exportHabitsToICS(activeHabits);
     });
   }
 
@@ -317,7 +311,6 @@ function setupEventListeners() {
       try {
         const result = await googleCalendar.syncAllEnabledHabits();
         if (result && result.mode === 'unauthenticated' && result.count > 0) {
-          // Open each or download ICS
           googleCalendar.exportHabitsToICS(result.habits);
           showToast(`Prepared .ICS file and opening first habit in Google Calendar...`, '📅');
           if (result.habits[0]) {
@@ -328,7 +321,7 @@ function setupEventListeners() {
         showToast('Sync failed: ' + err.message, '⚠️');
       } finally {
         syncAllBtn.disabled = false;
-        syncAllBtn.innerHTML = `<span>🔄</span> Sync All Enabled Habits`;
+        syncAllBtn.innerHTML = `<span>🔄</span> Sync All Habits to Google Calendar`;
       }
     });
   }
@@ -337,15 +330,6 @@ function setupEventListeners() {
 function attachModalInnerListeners() {
   const container = document.getElementById('gcal-modal-body');
   if (!container) return;
-
-  // Toggle habit checkbox
-  container.querySelectorAll('.gcal-habit-toggle-check').forEach(chk => {
-    chk.addEventListener('change', (e) => {
-      const habitId = e.target.getAttribute('data-habit-id');
-      const checked = e.target.checked;
-      state.setHabitGoogleCalendarEnabled(habitId, checked);
-    });
-  });
 
   // Change reminder time input
   container.querySelectorAll('.gcal-time-input').forEach(inp => {
@@ -366,11 +350,6 @@ function attachModalInnerListeners() {
       const habit = state.getHabit(habitId);
       if (!habit) return;
 
-      // Automatically enable G-Cal for this habit if not already enabled
-      if (!habit.googleCalendarEnabled) {
-        state.setHabitGoogleCalendarEnabled(habitId, true);
-      }
-
       btn.disabled = true;
       btn.innerHTML = `<span>⏳</span>`;
 
@@ -378,36 +357,11 @@ function attachModalInnerListeners() {
         await googleCalendar.syncHabitToGoogleCalendar(habit);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>📅</span> Add`;
+        btn.innerHTML = `<span>📅</span> Add to G-Cal`;
+        renderModalContent();
       }
     });
   });
-
-  // Enable all habits button
-  const selectAllBtn = container.querySelector('#gcal-select-all-btn');
-  if (selectAllBtn) {
-    selectAllBtn.addEventListener('click', () => {
-      state.getHabits().forEach(h => {
-        h.googleCalendarEnabled = true;
-      });
-      state.saveToStorage();
-      state.notify();
-      showToast('All habits enabled for Google Calendar alerts!', '📅');
-    });
-  }
-
-  // Disable all habits button
-  const deselectAllBtn = container.querySelector('#gcal-deselect-all-btn');
-  if (deselectAllBtn) {
-    deselectAllBtn.addEventListener('click', () => {
-      state.getHabits().forEach(h => {
-        h.googleCalendarEnabled = false;
-      });
-      state.saveToStorage();
-      state.notify();
-      showToast('All Google Calendar alerts disabled', 'ℹ️');
-    });
-  }
 
   // Open Google Calendar Web directly
   const openWebBtn = container.querySelector('#gcal-open-web-calendar-btn');

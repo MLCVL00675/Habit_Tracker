@@ -218,22 +218,12 @@ export function renderStreaksView() {
           </div>
         </div>
 
-        <!-- Google Calendar Alerts & Daily Reminder Panel -->
-        <div class="streak-gcal-bar ${habit.googleCalendarEnabled ? 'gcal-active' : ''}">
+        <!-- Google Calendar & Daily Reminder Panel -->
+        <div class="streak-gcal-bar">
           <div class="streak-gcal-left">
-            <div class="streak-gcal-toggle-wrap" title="Enable or disable Google Calendar alerts for this habit">
-              <label class="gcal-switch">
-                <input type="checkbox" class="streak-gcal-toggle" data-habit-id="${habit.id}" ${habit.googleCalendarEnabled ? 'checked' : ''} />
-                <span class="gcal-slider"></span>
-              </label>
-              <span class="gcal-toggle-label">
-                <span class="gcal-icon-mini">📅</span>
-                <span class="gcal-text-main">G-Cal Alert</span>
-              </span>
-            </div>
-            
             <div class="streak-reminder-time-wrap" title="Set daily reminder alert time for Google Calendar">
               <span class="streak-reminder-clock">⏰</span>
+              <span class="streak-reminder-label">Reminder:</span>
               <input type="time" class="streak-time-input" data-habit-id="${habit.id}" value="${habit.reminderTime || '08:00'}" />
             </div>
           </div>
@@ -393,16 +383,6 @@ function attachStreaksListeners(container, today) {
         state.toggleHabit(day, habitId);
         renderStreaksView();
       }
-    });
-  });
-
-  // Google Calendar Toggle switches in streak cards
-  container.querySelectorAll('.streak-gcal-toggle').forEach(toggle => {
-    toggle.addEventListener('change', (e) => {
-      const habitId = toggle.getAttribute('data-habit-id');
-      const checked = e.target.checked;
-      state.setHabitGoogleCalendarEnabled(habitId, checked);
-      renderStreaksView();
     });
   });
 

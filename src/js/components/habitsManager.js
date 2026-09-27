@@ -240,22 +240,10 @@ export function renderHabitsManagerView() {
               <span class="hint-text">Click to toggle the specific days this habit is scheduled.</span>
             </div>
 
-            <!-- Reminder Time & Google Calendar Alert -->
-            <div class="form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label" for="new-habit-reminder-time">⏰ Daily Reminder Time</label>
-                <input type="time" id="new-habit-reminder-time" class="form-input" value="08:00" />
-              </div>
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">📅 G-Cal Alert</label>
-                <div class="gcal-toggle-inline" style="display: flex; align-items: center; gap: 8px; height: 38px;">
-                  <label class="gcal-switch">
-                    <input type="checkbox" id="new-habit-gcal-enabled" />
-                    <span class="gcal-slider"></span>
-                  </label>
-                  <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Enable Sync</span>
-                </div>
-              </div>
+            <!-- Daily Reminder Time -->
+            <div class="form-group">
+              <label class="form-label" for="new-habit-reminder-time">⏰ Daily Reminder Alert Time</label>
+              <input type="time" id="new-habit-reminder-time" class="form-input" value="08:00" />
             </div>
 
             <!-- Dynamic XP Commitment Preview -->
@@ -564,7 +552,7 @@ function attachHabitsManagerEvents(container) {
         weeklyTarget: freqMode === 'weekly_target' ? weeklyTarget : 7,
         specificDays,
         reminderTime: document.getElementById('new-habit-reminder-time')?.value || '08:00',
-        googleCalendarEnabled: Boolean(document.getElementById('new-habit-gcal-enabled')?.checked)
+        googleCalendarEnabled: true
       });
 
       // Reset form
@@ -861,22 +849,10 @@ function openEditHabitModal(habitId) {
         </div>
       </div>
 
-      <!-- Reminder Time & Google Calendar Alerts in Edit Modal -->
-      <div class="form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-        <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label" for="edit-habit-reminder-time">⏰ Reminder Time</label>
-          <input type="time" id="edit-habit-reminder-time" class="form-input" value="${habit.reminderTime || '08:00'}" />
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label">📅 G-Cal Alert</label>
-          <div class="gcal-toggle-inline" style="display: flex; align-items: center; gap: 8px; height: 38px;">
-            <label class="gcal-switch">
-              <input type="checkbox" id="edit-habit-gcal-enabled" ${habit.googleCalendarEnabled ? 'checked' : ''} />
-              <span class="gcal-slider"></span>
-            </label>
-            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Enable Sync</span>
-          </div>
-        </div>
+      <!-- Reminder Time in Edit Modal -->
+      <div class="form-group">
+        <label class="form-label" for="edit-habit-reminder-time">⏰ Daily Reminder Alert Time</label>
+        <input type="time" id="edit-habit-reminder-time" class="form-input" value="${habit.reminderTime || '08:00'}" />
       </div>
 
       <!-- Retirement Status Configuration -->
@@ -1018,7 +994,6 @@ function openEditHabitModal(habitId) {
     }
 
     const reminderTimeVal = document.getElementById('edit-habit-reminder-time')?.value || '08:00';
-    const gcalEnabledVal = Boolean(document.getElementById('edit-habit-gcal-enabled')?.checked);
     
     const isRetiredChecked = Boolean(document.getElementById('edit-habit-retired-toggle')?.checked);
     const retiredMonthVal = isRetiredChecked 
@@ -1033,7 +1008,7 @@ function openEditHabitModal(habitId) {
       weeklyTarget: freqMode === 'weekly_target' ? parseInt(weeklyTargetInput.value, 10) : 7,
       specificDays,
       reminderTime: reminderTimeVal,
-      googleCalendarEnabled: gcalEnabledVal,
+      googleCalendarEnabled: true,
       retiredMonth: retiredMonthVal
     });
 
