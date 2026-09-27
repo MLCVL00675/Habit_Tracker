@@ -806,8 +806,8 @@ button {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: auto;
-  overflow-y: visible;
+  max-height: calc(100vh - 175px);
+  overflow: auto;
   position: relative;
   background-color: var(--bg-surface);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
@@ -825,7 +825,7 @@ button {
   background-color: var(--bg-surface);
 }
 
-/* Sticky Header Group & Columns - Pinned at top: 0 on viewport window scroll */
+/* Sticky Header Group & Columns - Pinned at top on scroll */
 .header-group-row th {
   position: sticky !important;
   top: 0 !important;
@@ -888,6 +888,14 @@ button {
   background-color: #0d131f !important;
   border-right: 2px solid var(--border-medium) !important;
   box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="paper"] .header-group-row th,
+[data-theme="paper"] .header-columns-row th,
+[data-theme="paper"] .th-group-date,
+[data-theme="paper"] .header-columns-row .sticky-col-1,
+[data-theme="paper"] .header-columns-row .sticky-col-2 {
+  background-color: #ffffff !important;
 }
 
 .th-content {
@@ -1014,9 +1022,17 @@ tbody .sticky-col-2 {
   letter-spacing: 0.02em;
 }
 
+[data-theme="paper"] .sticky-col-1,
+[data-theme="paper"] .sticky-col-2,
+[data-theme="paper"] tbody .sticky-col-1,
+[data-theme="paper"] tbody .sticky-col-2 {
+  background-color: #ffffff !important;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.08);
+}
+
 tbody tr:hover .sticky-col-1,
 tbody tr:hover .sticky-col-2 {
-  background: var(--bg-surface-hover);
+  background: var(--bg-surface-hover) !important;
 }
 
 /* Table Body Rows */
